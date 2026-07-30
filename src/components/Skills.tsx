@@ -53,13 +53,10 @@ export default function Skills() {
                   {cat.title}
                 </h3>
                 <ul className="space-y-2">
-                  {cat.skills.map((skill, si) => (
+                  {cat.skills.map((skill) => (
                     <li
                       key={skill}
-                      className="text-sm text-zinc-400 flex items-center gap-2 transition-all duration-300"
-                      style={{
-                        transitionDelay: `${si * 50}ms`,
-                      }}
+                      className="text-sm text-zinc-400 flex items-center gap-2"
                     >
                       <span className="size-1.5 rounded-full bg-indigo-500/60 shrink-0 group-hover:bg-indigo-400 transition-colors" />
                       {skill}
