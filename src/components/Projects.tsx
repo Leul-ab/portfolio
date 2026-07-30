@@ -1,5 +1,6 @@
 import { useState } from "react"
 import Reveal from "./Reveal"
+import ProjectModal from "./ProjectModal"
 
 const projects = [
   {
@@ -40,6 +41,7 @@ const filters = [
 
 export default function Projects() {
   const [activeFilter, setActiveFilter] = useState("all")
+  const [selected, setSelected] = useState<typeof projects[number] | null>(null)
 
   const filtered =
     activeFilter === "all"
@@ -77,7 +79,10 @@ export default function Projects() {
         <div className="grid sm:grid-cols-2 gap-6">
           {filtered.map((project, i) => (
             <Reveal key={project.title} direction="up" delay={i * 100}>
-              <div className="group rounded-xl border border-zinc-800 bg-zinc-900/50 overflow-hidden hover:border-zinc-700 hover:shadow-[0_0_32px_-8px_rgba(99,102,241,0.15)] transition-all duration-300">
+              <button
+                onClick={() => setSelected(project)}
+                className="w-full text-left group rounded-xl border border-zinc-800 bg-zinc-900/50 overflow-hidden hover:border-zinc-700 hover:shadow-[0_0_32px_-8px_rgba(99,102,241,0.15)] transition-all duration-300 cursor-pointer"
+              >
                 <div className="h-48 bg-gradient-to-br from-indigo-500/10 to-purple-500/10 flex items-center justify-center border-b border-zinc-800 overflow-hidden">
                   <span className="text-5xl opacity-40 group-hover:opacity-60 group-hover:scale-110 transition-all duration-500">
                     📁
@@ -87,7 +92,7 @@ export default function Projects() {
                   <h3 className="text-lg font-semibold text-zinc-100 mb-2">
                     {project.title}
                   </h3>
-                  <p className="text-sm text-zinc-400 leading-relaxed mb-4">
+                  <p className="text-sm text-zinc-400 leading-relaxed mb-4 line-clamp-2">
                     {project.desc}
                   </p>
                   <div className="flex flex-wrap gap-2 mb-4">
@@ -101,31 +106,23 @@ export default function Projects() {
                     ))}
                   </div>
                   <div className="flex items-center gap-3">
-                    <a
-                      href={project.links.github}
-                      className="text-xs text-zinc-500 hover:text-zinc-300 transition-colors inline-flex items-center gap-1 group/link"
-                    >
-                      GitHub
-                      <span className="group-hover/link:translate-x-1 transition-transform">
+                    <span className="text-xs text-zinc-500 group-hover:text-zinc-300 transition-colors inline-flex items-center gap-1">
+                      View Details
+                      <span className="group-hover:translate-x-1 transition-transform">
                         →
                       </span>
-                    </a>
-                    <a
-                      href={project.links.live}
-                      className="text-xs text-zinc-500 hover:text-zinc-300 transition-colors inline-flex items-center gap-1 group/link"
-                    >
-                      Live Demo
-                      <span className="group-hover/link:translate-x-1 transition-transform">
-                        →
-                      </span>
-                    </a>
+                    </span>
                   </div>
                 </div>
-              </div>
+              </button>
             </Reveal>
           ))}
         </div>
       </div>
+
+      {selected && (
+        <ProjectModal project={selected} onClose={() => setSelected(null)} />
+      )}
     </section>
   )
 }

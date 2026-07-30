@@ -54,7 +54,30 @@ export default function Hero() {
       id="hero"
       className="min-h-screen flex items-center justify-center relative overflow-hidden"
     >
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-indigo-900/20 via-zinc-950 to-zinc-950" />
+      {/* Gradient background */}
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-indigo-900/20 via-transparent to-transparent" />
+
+      {/* Geometric grid dots */}
+      <div
+        className="absolute inset-0 opacity-[0.15] dark:opacity-[0.08]"
+        style={{
+          backgroundImage:
+            "radial-gradient(circle, var(--color-zinc-400) 0.5px, transparent 0.5px)",
+          backgroundSize: "40px 40px",
+          animation: "grid-drift 20s ease-in-out infinite",
+        }}
+      />
+      <div
+        className="absolute inset-0 opacity-[0.08] dark:opacity-[0.04]"
+        style={{
+          backgroundImage:
+            "radial-gradient(circle, var(--color-indigo-400) 1px, transparent 1px)",
+          backgroundSize: "80px 80px",
+          animation: "grid-drift 25s ease-in-out infinite reverse",
+        }}
+      />
+
+      {/* Parallax orbs */}
       <div
         className="absolute top-1/4 left-1/4 size-72 rounded-full bg-indigo-500/10 blur-3xl"
         style={{
