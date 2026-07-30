@@ -1,0 +1,62 @@
+import Reveal from "./Reveal"
+
+export default function About() {
+  return (
+    <section id="about" className="py-24 px-4">
+      <div className="max-w-6xl mx-auto">
+        <Reveal>
+          <h2 className="text-3xl md:text-4xl font-bold mb-2">
+            About <span className="text-indigo-400">Me</span>
+          </h2>
+          <div className="w-20 h-1 bg-indigo-500 rounded-full mb-10" />
+        </Reveal>
+
+        <div className="grid md:grid-cols-2 gap-12 items-center">
+          <Reveal direction="left">
+            <div className="relative group">
+              <div className="aspect-square rounded-2xl bg-gradient-to-br from-indigo-500/20 to-purple-500/20 border border-zinc-800 flex items-center justify-center group-hover:border-indigo-500/40 transition-colors">
+                <span className="text-6xl">👨‍💻</span>
+              </div>
+              <div className="absolute -bottom-4 -right-4 size-32 rounded-xl bg-indigo-500/10 border border-zinc-800 hidden md:flex items-center justify-center group-hover:border-indigo-500/40 transition-colors">
+                <span className="text-3xl">🚀</span>
+              </div>
+            </div>
+          </Reveal>
+
+          <Reveal direction="right" delay={100}>
+            <div className="space-y-5">
+              <p className="text-zinc-300 leading-relaxed">
+                I'm a full-stack developer with experience building web
+                applications from the ground up. I enjoy turning complex
+                problems into simple, elegant solutions.
+              </p>
+              <p className="text-zinc-400 leading-relaxed">
+                My stack spans React, TypeScript, Node.js, and modern databases.
+                I care about performance, accessibility, and writing maintainable
+                code that scales.
+              </p>
+
+              <div className="grid grid-cols-2 gap-4 pt-4">
+                {[
+                  { label: "Location", value: "Addis Ababa, Ethiopia" },
+                  { label: "Email", value: "leul@example.com" },
+                  { label: "Freelance", value: "Available" },
+                  { label: "Experience", value: "3+ Years" },
+                ].map((item) => (
+                  <div key={item.label}>
+                    <p className="text-zinc-500 text-xs uppercase tracking-wider">
+                      {item.label}
+                    </p>
+                    <p className="text-zinc-200 font-medium mt-1">
+                      {item.value}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </Reveal>
+        </div>
+      </div>
+    </section>
+  )
+}
