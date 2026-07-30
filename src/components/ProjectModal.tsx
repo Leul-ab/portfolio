@@ -31,21 +31,21 @@ export default function ProjectModal({
       className="fixed inset-0 z-[70] flex items-center justify-center p-4"
       onClick={onClose}
     >
-      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
+      <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" />
       <div
         onClick={(e) => e.stopPropagation()}
-        className="relative w-full max-w-lg rounded-2xl border border-zinc-800 bg-zinc-950 p-8 shadow-2xl animate-in"
+        className="relative w-full max-w-lg rounded-2xl glass-strong border border-zinc-800/20 p-8 shadow-2xl shine"
       >
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 size-8 flex items-center justify-center rounded-lg text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800 transition-all cursor-pointer"
+          className="absolute top-4 right-4 size-8 flex items-center justify-center rounded-lg text-zinc-500 hover:text-zinc-300 glass glass-hover transition-all cursor-pointer"
         >
           <svg className="size-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
           </svg>
         </button>
 
-        <div className="h-40 rounded-xl bg-gradient-to-br from-indigo-500/15 to-purple-500/15 border border-zinc-800 flex items-center justify-center mb-6">
+        <div className="h-40 rounded-xl bg-gradient-to-br from-indigo-500/15 to-purple-500/15 border border-zinc-800/20 flex items-center justify-center mb-6">
           <span className="text-5xl opacity-50">📁</span>
         </div>
 
@@ -68,7 +68,7 @@ export default function ProjectModal({
         <div className="flex items-center gap-3">
           <a
             href={project.links.github}
-            className="flex-1 text-center px-4 py-2.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-300 hover:text-white text-sm font-medium transition-all"
+            className="flex-1 text-center px-4 py-2.5 rounded-lg glass glass-hover text-zinc-300 hover:text-white text-sm font-medium transition-all"
           >
             View on GitHub
           </a>

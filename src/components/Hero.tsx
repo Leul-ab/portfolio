@@ -54,40 +54,34 @@ export default function Hero() {
       id="hero"
       className="min-h-screen flex items-center justify-center relative overflow-hidden"
     >
-      {/* Gradient background */}
+      {/* Gradient base */}
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-indigo-900/20 via-transparent to-transparent" />
 
-      {/* Geometric grid dots */}
+      {/* Liquid blobs */}
       <div
-        className="absolute inset-0 opacity-[0.15] dark:opacity-[0.08]"
+        className="absolute -top-1/4 -right-1/4 size-[500px] md:size-[700px] bg-indigo-500/10 blur-3xl animate-blob"
+        style={{
+          transform: `translate(${mouseX * -0.3}px, ${mouseY * -0.3}px)`,
+        }}
+      />
+      <div
+        className="absolute -bottom-1/4 -left-1/4 size-[500px] md:size-[700px] bg-purple-500/10 blur-3xl animate-blob2"
+        style={{
+          transform: `translate(${mouseX * 0.2}px, ${mouseY * 0.2}px)`,
+        }}
+      />
+      <div
+        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 size-[400px] md:size-[600px] bg-pink-500/5 blur-3xl animate-blob3"
+      />
+
+      {/* Geometric grid */}
+      <div
+        className="absolute inset-0 opacity-[0.12]"
         style={{
           backgroundImage:
             "radial-gradient(circle, var(--color-zinc-400) 0.5px, transparent 0.5px)",
           backgroundSize: "40px 40px",
           animation: "grid-drift 20s ease-in-out infinite",
-        }}
-      />
-      <div
-        className="absolute inset-0 opacity-[0.08] dark:opacity-[0.04]"
-        style={{
-          backgroundImage:
-            "radial-gradient(circle, var(--color-indigo-400) 1px, transparent 1px)",
-          backgroundSize: "80px 80px",
-          animation: "grid-drift 25s ease-in-out infinite reverse",
-        }}
-      />
-
-      {/* Parallax orbs */}
-      <div
-        className="absolute top-1/4 left-1/4 size-72 rounded-full bg-indigo-500/10 blur-3xl"
-        style={{
-          transform: `translate(${mouseX * -0.5}px, ${mouseY * -0.5}px)`,
-        }}
-      />
-      <div
-        className="absolute bottom-1/4 right-1/4 size-96 rounded-full bg-purple-500/10 blur-3xl"
-        style={{
-          transform: `translate(${mouseX * 0.3}px, ${mouseY * 0.3}px)`,
         }}
       />
 
@@ -116,13 +110,13 @@ export default function Hero() {
           </a>
           <a
             href="#projects"
-            className="px-6 py-3 rounded-lg border border-zinc-700 hover:border-zinc-500 text-zinc-300 hover:text-white font-medium transition-all hover:scale-105 active:scale-95"
+            className="px-6 py-3 rounded-lg glass glass-hover shine text-zinc-300 hover:text-zinc-100 font-medium transition-all hover:scale-105 active:scale-95"
           >
             View Projects
           </a>
           <a
             href="#"
-            className="px-6 py-3 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-300 hover:text-white font-medium transition-all hover:scale-105 active:scale-95 inline-flex items-center gap-2"
+            className="px-6 py-3 rounded-lg glass glass-hover shine text-zinc-300 hover:text-zinc-100 font-medium transition-all hover:scale-105 active:scale-95 inline-flex items-center gap-2"
           >
             <svg className="size-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />

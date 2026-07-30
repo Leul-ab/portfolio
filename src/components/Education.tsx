@@ -15,8 +15,9 @@ const education = [
 
 export default function Education() {
   return (
-    <section id="education" className="py-24 px-4">
-      <div className="max-w-6xl mx-auto">
+    <section id="education" className="py-24 px-4 relative">
+      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-indigo-950/5 to-transparent pointer-events-none" />
+      <div className="max-w-6xl mx-auto relative">
         <Reveal>
           <h2 className="text-3xl md:text-4xl font-bold mb-2">Education</h2>
           <div className="w-20 h-1 bg-indigo-500 rounded-full mb-10" />
@@ -25,7 +26,7 @@ export default function Education() {
         <div className="grid sm:grid-cols-2 gap-6">
           {education.map((item, i) => (
             <Reveal key={item.degree} direction="up" delay={i * 120}>
-              <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-6 hover:border-zinc-700 hover:shadow-[0_0_24px_-4px_rgba(99,102,241,0.1)] transition-all duration-300">
+              <div className="rounded-xl glass glass-hover shine transition-all duration-300 p-6">
                 <span className="text-xs text-indigo-400 font-mono">
                   {item.period}
                 </span>

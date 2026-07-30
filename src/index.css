@@ -6,6 +6,9 @@
   --color-surface: #18181b;
   --color-surface-light: #27272a;
   --font-sans: "Inter", system-ui, -apple-system, sans-serif;
+  --animate-blob: blob 12s ease-in-out infinite;
+  --animate-blob2: blob 16s ease-in-out infinite reverse;
+  --animate-blob3: blob 20s ease-in-out infinite 4s;
 }
 
 html {
@@ -21,6 +24,7 @@ body {
   @apply bg-indigo-500/30;
 }
 
+/* ─── Theme Overrides ─── */
 [data-theme="light"] {
   --color-zinc-950: oklch(98.5% 0 0);
   --color-zinc-900: oklch(96.7% 0.001 286.375);
@@ -33,25 +37,90 @@ body {
   --color-zinc-200: oklch(27.4% 0.006 286.033);
   --color-zinc-100: oklch(21% 0.006 285.885);
   --color-zinc-50: oklch(14.1% 0.005 285.823);
-  --color-white: oklch(14.1% 0.005 285.823);
-}
-
-[data-theme="light"] body {
-  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 [data-theme="light"] ::selection {
   background-color: color-mix(in oklab, var(--color-indigo-500) 20%, transparent);
 }
 
-@keyframes float {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-10px); }
+/* ─── Liquid Glass Base ─── */
+.glass {
+  background: color-mix(in oklab, var(--color-zinc-100) 1.5%, transparent);
+  backdrop-filter: blur(40px) saturate(140%);
+  -webkit-backdrop-filter: blur(40px) saturate(140%);
+  border-color: color-mix(in oklab, var(--color-zinc-100) 3%, transparent);
+  box-shadow: inset 0 0.5px 0 color-mix(in oklab, var(--color-zinc-100) 10%, transparent),
+              0 8px 32px color-mix(in oklab, #000 8%, transparent);
 }
 
-@keyframes pulse-glow {
-  0%, 100% { opacity: 0.4; }
-  50% { opacity: 0.8; }
+.glass-tint {
+  background: color-mix(in oklab, var(--color-indigo-500) 4%, color-mix(in oklab, var(--color-zinc-100) 1.5%, transparent));
+  backdrop-filter: blur(40px) saturate(140%);
+  -webkit-backdrop-filter: blur(40px) saturate(140%);
+  border-color: color-mix(in oklab, var(--color-indigo-500) 6%, transparent);
+  box-shadow: inset 0 0.5px 0 color-mix(in oklab, var(--color-zinc-100) 10%, transparent),
+              0 8px 32px color-mix(in oklab, #000 8%, transparent);
+}
+
+.glass-hover:hover {
+  background: color-mix(in oklab, var(--color-zinc-100) 4%, transparent);
+  border-color: color-mix(in oklab, var(--color-zinc-100) 6%, transparent);
+}
+
+.glass-strong {
+  background: color-mix(in oklab, var(--color-zinc-950) 50%, transparent);
+  backdrop-filter: blur(50px) saturate(140%);
+  -webkit-backdrop-filter: blur(50px) saturate(140%);
+  box-shadow: inset 0 0.5px 0 color-mix(in oklab, var(--color-zinc-100) 8%, transparent),
+              0 8px 32px color-mix(in oklab, #000 12%, transparent);
+}
+
+/* ─── Shine Overlay ─── */
+.shine {
+  position: relative;
+  overflow: hidden;
+}
+
+.shine::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(
+    115deg,
+    transparent 25%,
+    color-mix(in oklab, var(--color-zinc-100) 5%, transparent) 45%,
+    color-mix(in oklab, var(--color-zinc-100) 2%, transparent) 55%,
+    transparent 75%
+  );
+  background-size: 220% 100%;
+  background-position: 220% 0;
+  transition: background-position 0.9s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  pointer-events: none;
+}
+
+.shine:hover::before {
+  background-position: -220% 0;
+}
+
+/* ─── Animations ─── */
+@keyframes blob {
+  0%, 100% {
+    border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%;
+    transform: translate(0, 0) scale(1);
+  }
+  25% {
+    border-radius: 40% 60% 70% 30% / 40% 60% 30% 70%;
+    transform: translate(30px, -20px) scale(1.05);
+  }
+  50% {
+    border-radius: 50% 50% 50% 50% / 60% 40% 60% 40%;
+    transform: translate(-20px, 30px) scale(0.95);
+  }
+  75% {
+    border-radius: 70% 30% 40% 60% / 30% 70% 40% 60%;
+    transform: translate(20px, -10px) scale(1.02);
+  }
 }
 
 @keyframes grid-drift {

@@ -25,8 +25,9 @@ const services = [
 
 export default function Services() {
   return (
-    <section className="py-24 px-4">
-      <div className="max-w-6xl mx-auto">
+    <section className="py-24 px-4 relative">
+      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-indigo-950/5 to-transparent pointer-events-none" />
+      <div className="max-w-6xl mx-auto relative">
         <Reveal>
           <h2 className="text-3xl md:text-4xl font-bold mb-2">
             What I <span className="text-indigo-400">Do</span>
@@ -37,7 +38,7 @@ export default function Services() {
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {services.map((s, i) => (
             <Reveal key={s.title} direction="up" delay={i * 100}>
-              <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-6 hover:border-indigo-500/30 hover:shadow-[0_0_32px_-8px_rgba(99,102,241,0.15)] transition-all duration-300 group h-full">
+              <div className="rounded-xl glass glass-hover shine transition-all duration-300 p-6 group h-full">
                 <span className="text-3xl mb-4 block group-hover:scale-110 transition-transform origin-left">
                   {s.icon}
                 </span>

@@ -2,8 +2,9 @@ import Reveal from "./Reveal"
 
 export default function About() {
   return (
-    <section id="about" className="py-24 px-4">
-      <div className="max-w-6xl mx-auto">
+    <section id="about" className="py-24 px-4 relative">
+      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-indigo-950/5 to-transparent pointer-events-none" />
+      <div className="max-w-6xl mx-auto relative">
         <Reveal>
           <h2 className="text-3xl md:text-4xl font-bold mb-2">
             About <span className="text-indigo-400">Me</span>
@@ -14,10 +15,10 @@ export default function About() {
         <div className="grid md:grid-cols-2 gap-12 items-center">
           <Reveal direction="left">
             <div className="relative group">
-              <div className="aspect-square rounded-2xl bg-gradient-to-br from-indigo-500/20 to-purple-500/20 border border-zinc-800 flex items-center justify-center group-hover:border-indigo-500/40 transition-colors">
+              <div className="aspect-square rounded-2xl glass shine flex items-center justify-center group-hover:border-indigo-500/20 transition-colors">
                 <span className="text-6xl">👨‍💻</span>
               </div>
-              <div className="absolute -bottom-4 -right-4 size-32 rounded-xl bg-indigo-500/10 border border-zinc-800 hidden md:flex items-center justify-center group-hover:border-indigo-500/40 transition-colors">
+              <div className="absolute -bottom-4 -right-4 size-32 rounded-xl glass shine hidden md:flex items-center justify-center group-hover:border-indigo-500/20 transition-colors">
                 <span className="text-3xl">🚀</span>
               </div>
             </div>

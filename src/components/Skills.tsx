@@ -55,8 +55,9 @@ const skillCategories: { title: string; skills: Skill[] }[] = [
 
 export default function Skills() {
   return (
-    <section id="skills" className="py-24 px-4 bg-zinc-950/50">
-      <div className="max-w-6xl mx-auto">
+    <section id="skills" className="py-24 px-4 relative">
+      <div className="absolute inset-0 bg-gradient-to-b from-indigo-950/5 via-transparent to-transparent pointer-events-none" />
+      <div className="max-w-6xl mx-auto relative">
         <Reveal>
           <h2 className="text-3xl md:text-4xl font-bold mb-2">
             My <span className="text-indigo-400">Skills</span>
@@ -67,7 +68,7 @@ export default function Skills() {
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {skillCategories.map((cat, ci) => (
             <Reveal key={cat.title} direction="up" delay={ci * 100}>
-              <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-6 hover:border-zinc-700 hover:shadow-[0_0_24px_-4px_rgba(99,102,241,0.15)] transition-all duration-300 group">
+              <div className="rounded-xl glass glass-hover shine transition-all duration-300 p-6 group">
                 <h3 className="text-lg font-semibold text-zinc-100 mb-5 flex items-center gap-2">
                   <span className="size-2 rounded-full bg-indigo-500 group-hover:scale-150 transition-transform" />
                   {cat.title}
@@ -79,7 +80,7 @@ export default function Skills() {
                       className="flex items-center gap-3 text-sm text-zinc-400 group/skill"
                     >
                       <span
-                        className="size-7 rounded-md flex items-center justify-center text-base shrink-0 bg-zinc-800/50 group-hover/skill:scale-110 transition-transform"
+                        className="size-7 rounded-md flex items-center justify-center text-base shrink-0 glass group-hover/skill:scale-110 transition-transform"
                         style={{ color: skill.color }}
                       >
                         {skill.icon}

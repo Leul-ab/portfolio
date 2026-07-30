@@ -49,8 +49,9 @@ export default function Projects() {
       : projects.filter((p) => p.category === activeFilter)
 
   return (
-    <section id="projects" className="py-24 px-4 bg-zinc-950/50">
-      <div className="max-w-6xl mx-auto">
+    <section id="projects" className="py-24 px-4 relative">
+      <div className="absolute inset-0 bg-gradient-to-b from-purple-950/5 via-transparent to-transparent pointer-events-none" />
+      <div className="max-w-6xl mx-auto relative">
         <Reveal>
           <h2 className="text-3xl md:text-4xl font-bold mb-2">
             Featured <span className="text-indigo-400">Projects</span>
@@ -64,10 +65,10 @@ export default function Projects() {
               <button
                 key={f.value}
                 onClick={() => setActiveFilter(f.value)}
-                className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all cursor-pointer ${
+                className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all cursor-pointer shine ${
                   activeFilter === f.value
                     ? "bg-indigo-500 text-white"
-                    : "bg-zinc-900 text-zinc-400 border border-zinc-800 hover:border-zinc-600"
+                    : "glass glass-hover text-zinc-400 hover:text-zinc-100"
                 }`}
               >
                 {f.label}
@@ -81,9 +82,9 @@ export default function Projects() {
             <Reveal key={project.title} direction="up" delay={i * 100}>
               <button
                 onClick={() => setSelected(project)}
-                className="w-full text-left group rounded-xl border border-zinc-800 bg-zinc-900/50 overflow-hidden hover:border-zinc-700 hover:shadow-[0_0_32px_-8px_rgba(99,102,241,0.15)] transition-all duration-300 cursor-pointer"
+                className="w-full text-left group rounded-xl glass glass-hover shine overflow-hidden transition-all duration-300 cursor-pointer"
               >
-                <div className="h-48 bg-gradient-to-br from-indigo-500/10 to-purple-500/10 flex items-center justify-center border-b border-zinc-800 overflow-hidden">
+                <div className="h-48 bg-gradient-to-br from-indigo-500/10 to-purple-500/10 flex items-center justify-center border-b border-zinc-800/20 overflow-hidden">
                   <span className="text-5xl opacity-40 group-hover:opacity-60 group-hover:scale-110 transition-all duration-500">
                     📁
                   </span>

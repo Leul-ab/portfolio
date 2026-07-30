@@ -11,8 +11,9 @@ export default function Contact() {
   }
 
   return (
-    <section id="contact" className="py-24 px-4 bg-zinc-950/50">
-      <div className="max-w-6xl mx-auto">
+    <section id="contact" className="py-24 px-4 relative">
+      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-indigo-950/5 to-transparent pointer-events-none" />
+      <div className="max-w-6xl mx-auto relative">
         <Reveal>
           <h2 className="text-3xl md:text-4xl font-bold mb-2">
             Get in <span className="text-indigo-400">Touch</span>
@@ -52,25 +53,25 @@ export default function Contact() {
                   type="text"
                   placeholder="Your Name"
                   required
-                  className="w-full px-4 py-3 rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30 transition-all text-sm"
+                  className="w-full px-4 py-3 rounded-lg glass text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-indigo-500/40 focus:ring-1 focus:ring-indigo-500/20 transition-all text-sm"
                 />
                 <input
                   type="email"
                   placeholder="Your Email"
                   required
-                  className="w-full px-4 py-3 rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30 transition-all text-sm"
+                  className="w-full px-4 py-3 rounded-lg glass text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-indigo-500/40 focus:ring-1 focus:ring-indigo-500/20 transition-all text-sm"
                 />
               </div>
               <input
                 type="text"
                 placeholder="Subject"
-                className="w-full px-4 py-3 rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30 transition-all text-sm"
+                className="w-full px-4 py-3 rounded-lg glass text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-indigo-500/40 focus:ring-1 focus:ring-indigo-500/20 transition-all text-sm"
               />
               <textarea
                 placeholder="Your Message"
                 rows={5}
                 required
-                className="w-full px-4 py-3 rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30 transition-all text-sm resize-none"
+                className="w-full px-4 py-3 rounded-lg glass text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-indigo-500/40 focus:ring-1 focus:ring-indigo-500/20 transition-all text-sm resize-none"
               />
               <button
                 type="submit"

@@ -72,7 +72,7 @@ export default function Stats() {
   }, [])
 
   return (
-    <section className="py-20 px-4 border-y border-zinc-800/50" ref={ref}>
+    <section className="py-20 px-4 border-y border-zinc-800/20" ref={ref}>
       <div className="max-w-6xl mx-auto">
         <Reveal>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
