@@ -155,7 +155,7 @@ export default function Hero() {
                 href={s.href}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-zinc-500 hover:text-zinc-300 transition-colors text-sm hover:scale-110 inline-flex items-center justify-center size-11 rounded-full bg-white/5 hover:bg-white/10"
+                className="inline-flex items-center justify-center size-11 rounded-full text-zinc-500 transition-all hover:text-indigo-300 hover:scale-110 hover:shadow-[0_0_25px_rgba(99,102,241,0.55)] dark:text-zinc-400 dark:hover:text-indigo-300"
                 aria-label={s.label}
               >
                 <Icon />

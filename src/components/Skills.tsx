@@ -1,4 +1,5 @@
-import type { ComponentType, SVGProps } from "react"
+import { useState, type ComponentType, type SVGProps } from "react"
+import { AnimatePresence, motion } from "framer-motion"
 import {
   Atom,
   Code2,
@@ -66,6 +67,8 @@ const skillCategories: { title: string; skills: Skill[] }[] = [
 ]
 
 export default function Skills() {
+  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null)
+
   return (
     <section id="skills" className="py-24 px-4 relative">
       <div className="absolute inset-0 bg-gradient-to-b from-indigo-950/5 via-transparent to-transparent pointer-events-none" />
@@ -80,7 +83,29 @@ export default function Skills() {
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {skillCategories.map((cat, ci) => (
             <Reveal key={cat.title} direction="up" delay={ci * 100}>
-              <div className="rounded-xl glass glass-hover shine transition-all duration-300 p-6 group">
+              <div
+                className="relative h-full w-full"
+                onMouseEnter={() => setHoveredIndex(ci)}
+                onMouseLeave={() => setHoveredIndex(null)}
+              >
+                <AnimatePresence>
+                  {hoveredIndex === ci && (
+                    <motion.span
+                      className="absolute inset-0 h-full w-full block rounded-3xl bg-indigo-500/10 border border-indigo-500/20"
+                      layoutId="hoverBackgroundSkills"
+                      initial={{ opacity: 0 }}
+                      animate={{
+                        opacity: 1,
+                        transition: { duration: 0.15 },
+                      }}
+                      exit={{
+                        opacity: 0,
+                        transition: { duration: 0.15, delay: 0.2 },
+                      }}
+                    />
+                  )}
+                </AnimatePresence>
+                <div className="relative z-20 rounded-xl glass glass-hover shine transition-all duration-300 p-6 group h-full">
                 <h3 className="text-lg font-semibold text-zinc-100 mb-5 flex items-center gap-2">
                   <span className="size-2 rounded-full bg-indigo-500 group-hover:scale-150 transition-transform" />
                   {cat.title}
@@ -102,6 +127,7 @@ export default function Skills() {
                       </span>
                     </div>
                   ))}
+                </div>
                 </div>
               </div>
             </Reveal>

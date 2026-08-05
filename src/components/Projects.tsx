@@ -1,11 +1,26 @@
 import { useState } from "react"
+import { AnimatePresence, motion } from "framer-motion"
 import Reveal from "./Reveal"
 import ProjectModal from "./ProjectModal"
 
 const projects = [
   {
     title: "Lease Tenant Management System",
-    desc: "End-to-end governmental web app, solution for managing tenants, leases, and payments with a secure admin dashboard.",
+    desc: "End-to-end governmental web app, solution for managing tenants, leases, and payments of Addis Ababa houses with a secure admin dashboard.",
+    tags: ["PHP Laravel", "React", "MySQL", "Tailwind CSS"],
+    category: "fullstack",
+    links: { github: "#", live: "#" },
+  },
+  {
+    title: "Budget Request And Cashflow",
+    desc: "Another End-to-end governmental web app that am working on currently, solution for managing budget requests and cashflow of Addis Ababa with a secure admin dashboard.",
+    tags: ["PHP Laravel", "React", "MySQL", "Tailwind CSS"],
+    category: "fullstack",
+    links: { github: "#", live: "#" },
+  },
+  {
+    title: "Digital Menu Management System",
+    desc: "A web app for restaurants to manage their digital menus, allowing customers to view and order from the menu online, with a secure admin dashboard for restaurant owners.",
     tags: ["PHP Laravel", "React", "MySQL", "Tailwind CSS"],
     category: "fullstack",
     links: { github: "#", live: "#" },
@@ -35,6 +50,7 @@ const filters = [
 
 export default function Projects() {
   const [activeFilter, setActiveFilter] = useState("all")
+  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null)
   const [selected, setSelected] = useState<typeof projects[number] | null>(null)
 
   const filtered =
@@ -74,10 +90,32 @@ export default function Projects() {
         <div className="grid sm:grid-cols-2 gap-6">
           {filtered.map((project, i) => (
             <Reveal key={project.title} direction="up" delay={i * 100}>
-              <button
-                onClick={() => setSelected(project)}
-                className="w-full text-left group rounded-xl glass glass-hover shine overflow-hidden transition-all duration-300 cursor-pointer"
+              <div
+                className="relative h-full w-full"
+                onMouseEnter={() => setHoveredIndex(i)}
+                onMouseLeave={() => setHoveredIndex(null)}
               >
+                <AnimatePresence>
+                  {hoveredIndex === i && (
+                    <motion.span
+                      className="absolute inset-0 h-full w-full block rounded-3xl bg-indigo-500/10 border border-indigo-500/20"
+                      layoutId="hoverBackground"
+                      initial={{ opacity: 0 }}
+                      animate={{
+                        opacity: 1,
+                        transition: { duration: 0.15 },
+                      }}
+                      exit={{
+                        opacity: 0,
+                        transition: { duration: 0.15, delay: 0.2 },
+                      }}
+                    />
+                  )}
+                </AnimatePresence>
+                <button
+                  onClick={() => setSelected(project)}
+                  className="relative z-20 w-full text-left group rounded-2xl glass glass-hover shine overflow-hidden transition-all duration-300 cursor-pointer"
+                >
                 <div className="h-48 bg-gradient-to-br from-indigo-500/10 to-purple-500/10 flex items-center justify-center border-b border-zinc-800/20 overflow-hidden">
                   <span className="text-5xl opacity-40 group-hover:opacity-60 group-hover:scale-110 transition-all duration-500">
                     📁
@@ -109,15 +147,18 @@ export default function Projects() {
                     </span>
                   </div>
                 </div>
-              </button>
+                </button>
+              </div>
             </Reveal>
           ))}
         </div>
       </div>
 
-      {selected && (
-        <ProjectModal project={selected} onClose={() => setSelected(null)} />
-      )}
+      <AnimatePresence>
+        {selected && (
+          <ProjectModal project={selected} onClose={() => setSelected(null)} />
+        )}
+      </AnimatePresence>
     </section>
   )
 }

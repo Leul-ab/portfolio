@@ -1,4 +1,5 @@
 import { useEffect } from "react"
+import { motion } from "framer-motion"
 
 interface Project {
   title: string
@@ -27,13 +28,21 @@ export default function ProjectModal({
   }, [onClose])
 
   return (
-    <div
+    <motion.div
       className="fixed inset-0 z-[70] flex items-center justify-center p-4"
       onClick={onClose}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.2 }}
     >
       <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" />
-      <div
+      <motion.div
         onClick={(e) => e.stopPropagation()}
+        initial={{ opacity: 0, scale: 0.9, y: 20 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.95, y: 10 }}
+        transition={{ type: "spring", stiffness: 320, damping: 28 }}
         className="relative w-full max-w-lg rounded-2xl glass-strong border border-zinc-800/20 p-8 shadow-2xl shine"
       >
         <button
@@ -79,7 +88,7 @@ export default function ProjectModal({
             Live Demo
           </a>
         </div>
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   )
 }
