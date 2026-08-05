@@ -23,7 +23,7 @@ export default function Header() {
       <div className="absolute top-0 left-1/4 w-72 h-72 bg-purple-500/20 rounded-full blur-3xl pointer-events-none" />
       <div className="absolute top-0 right-1/4 w-80 h-80 bg-indigo-500/15 rounded-full blur-3xl pointer-events-none" />
 
-      <nav className="relative w-full max-w-5xl rounded-2xl border border-white/10 bg-white/5 backdrop-blur-2xl shadow-[0_8px_32px_rgba(0,0,0,0.37)] transition-all duration-300 pointer-events-auto">
+      <nav className="relative w-full max-w-5xl rounded-2xl border border-white/10 bg-white-100 backdrop-blur-2xl backdrop-saturate-150 shadow-[0_8px_32px_rgba(0,0,0,0.37)] transition-all duration-300 pointer-events-auto">
         {/* Specular highlight — rim light reflection */}
         <div className="absolute inset-x-0 top-0 h-[1px] bg-gradient-to-r from-transparent via-white/40 to-transparent rounded-t-2xl" />
 
@@ -124,6 +124,8 @@ export default function Header() {
           </div>
         )}
       </nav>
+
+      
     </header>
   )
 }

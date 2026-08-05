@@ -4,39 +4,33 @@ import ProjectModal from "./ProjectModal"
 
 const projects = [
   {
-    title: "E-Commerce Platform",
-    desc: "Full-stack marketplace with real-time inventory, Stripe payments, admin dashboard, and role-based authentication.",
-    tags: ["React", "Node.js", "PostgreSQL", "Stripe"],
+    title: "Lease Tenant Management System",
+    desc: "End-to-end governmental web app, solution for managing tenants, leases, and payments with a secure admin dashboard.",
+    tags: ["PHP Laravel", "React", "MySQL", "Tailwind CSS"],
     category: "fullstack",
     links: { github: "#", live: "#" },
   },
   {
-    title: "Real-Time Chat App",
-    desc: "Messaging app with WebSockets, typing indicators, file sharing, and message persistence using MongoDB.",
-    tags: ["Next.js", "Socket.io", "MongoDB", "Redis"],
-    category: "fullstack",
+    title: "NIB Insurance API",
+    desc: "RESTful API for handling insurance claims and policy management with authentication and data validation.",
+    tags: ["C#", "Entity Framework", "PostgreSQL", "JWT"],
+    category: "Backend API",
     links: { github: "#", live: "#" },
   },
   {
-    title: "Task Management Tool",
-    desc: "Kanban-style project management with drag-and-drop, team collaboration, and analytics dashboards.",
-    tags: ["React", "TypeScript", "Django", "Docker"],
+    title: "ArifMenu",
+    desc: "Restaurant menu web app with dynamic menu management, order tracking, and responsive design for mobile and desktop.",
+    tags: ["C#", "Entity Framework", "PostgreSQL", "JWT"],
     category: "frontend",
-    links: { github: "#", live: "#" },
-  },
-  {
-    title: "AI Content Generator",
-    desc: "AI-powered writing assistant with OpenAI integration, template library, and export to multiple formats.",
-    tags: ["Next.js", "Python", "OpenAI", "AWS"],
-    category: "fullstack",
     links: { github: "#", live: "#" },
   },
 ]
 
 const filters = [
-  { label: "All", value: "all" },
-  { label: "Full Stack", value: "fullstack" },
-  { label: "Frontend", value: "frontend" },
+  //{ label: "All", value: "all" },
+  // { label: "Full Stack", value: "fullstack" },
+  // { label: "Frontend", value: "frontend" },
+  // { label: "Backend API", value: "Backend API" }
 ] as const
 
 export default function Projects() {

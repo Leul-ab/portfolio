@@ -2,25 +2,18 @@ import Reveal from "./Reveal"
 
 const jobs = [
   {
-    role: "Senior Full Stack Developer",
-    company: "Tech Corp",
-    period: "Jan 2024 – Present",
-    description:
-      "Led development of a SaaS platform serving 10K+ users. Built microservices architecture, designed REST/GraphQL APIs, and optimized database queries for 40% performance gain.",
-  },
-  {
     role: "Full Stack Developer",
-    company: "StartupXYZ",
-    period: "Jun 2022 – Dec 2023",
+    company: "Ethio Innovation",
+    period: "May 2026 – Present",
     description:
-      "Developed and maintained multiple client-facing web apps. Integrated payment gateways, real-time features with WebSockets, and automated CI/CD pipelines.",
+      "Developed and maintained multiple Governmental web apps. Integrated payment gateways, real-time features updates.",
   },
   {
-    role: "Junior Developer",
-    company: "Agency Co.",
-    period: "Sep 2021 – May 2022",
+    role: "Backend Developer",
+    company: "Arifpay (Internship)",
+    period: "Oct 2025 – Jan 2026",
     description:
-      "Built responsive landing pages and admin dashboards. Collaborated in agile teams using Git, code reviews, and sprint planning.",
+      "Worked on ArifMenu full backend API development using C#, .NET, PostgreSQL and Clean Architecture.",
   },
 ]
 

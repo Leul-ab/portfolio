@@ -1,8 +1,26 @@
+import type { ComponentType, SVGProps } from "react"
+import {
+  Atom,
+  Code2,
+  FileCode,
+  Wind,
+  Zap,
+  GitBranch,
+  Database,
+  Server,
+  Hash,
+  Cpu,
+  Link,
+  ShieldCheck,
+  RefreshCcw,
+  FileText,
+  Box,
+} from "lucide-react"
 import Reveal from "./Reveal"
 
 interface Skill {
   name: string
-  icon: string
+  icon: ComponentType<SVGProps<SVGSVGElement>>
   color: string
 }
 
@@ -10,45 +28,39 @@ const skillCategories: { title: string; skills: Skill[] }[] = [
   {
     title: "Frontend",
     skills: [
-      { name: "React", icon: "⚛️", color: "#61DAFB" },
-      { name: "TypeScript", icon: "📘", color: "#3178C6" },
-      { name: "Next.js", icon: "▲", color: "#fff" },
-      { name: "Tailwind CSS", icon: "🌊", color: "#06B6D4" },
-      { name: "HTML/CSS", icon: "🌐", color: "#E34F26" },
-      { name: "JavaScript", icon: "🟨", color: "#F7DF1E" },
+      { name: "React", icon: Atom, color: "#61DAFB" },
+      { name: "TypeScript", icon: FileCode, color: "#3178C6" },
+      { name: "Tailwind CSS", icon: Wind, color: "#06B6D4" },
+      { name: "HTML/CSS", icon: Code2, color: "#E34F26" },
+      { name: "JavaScript", icon: Zap, color: "#F7DF1E" },
     ],
   },
   {
     title: "Backend",
     skills: [
-      { name: "Node.js", icon: "💚", color: "#339933" },
-      { name: "Express", icon: "⚙️", color: "#fff" },
-      { name: "Python", icon: "🐍", color: "#3776AB" },
-      { name: "Django", icon: "🎯", color: "#092E20" },
-      { name: "REST APIs", icon: "🔗", color: "#fff" },
-      { name: "GraphQL", icon: "◈", color: "#E10098" },
+      { name: "PHP Laravel", icon: Server, color: "#3776AB" },
+      { name: "C#", icon: Hash, color: "#092E20" },
+      { name: "Node.js", icon: Cpu, color: "#339933" },
+      { name: "Express", icon: Link, color: "#fff" },
+      { name: "REST APIs", icon: Link, color: "#fff" },
     ],
   },
   {
     title: "Database & DevOps",
     skills: [
-      { name: "PostgreSQL", icon: "🐘", color: "#4169E1" },
-      { name: "MongoDB", icon: "🍃", color: "#47A248" },
-      { name: "Redis", icon: "🔴", color: "#DC382D" },
-      { name: "Docker", icon: "🐳", color: "#2496ED" },
-      { name: "AWS", icon: "☁️", color: "#FF9900" },
-      { name: "Git", icon: "🔀", color: "#F05032" },
+      { name: "PostgreSQL", icon: Database, color: "#4169E1" },
+      { name: "MySQL", icon: Database, color: "#47A248" },
+      { name: "Git", icon: GitBranch, color: "#F05032" },
     ],
   },
   {
     title: "Tools & More",
     skills: [
-      { name: "Figma", icon: "🎨", color: "#F24E1E" },
-      { name: "Linux", icon: "🐧", color: "#fff" },
-      { name: "CI/CD", icon: "🔄", color: "#fff" },
-      { name: "WebSockets", icon: "🔌", color: "#fff" },
-      { name: "JWT/Auth", icon: "🔐", color: "#fff" },
-      { name: "Stripe", icon: "💳", color: "#008CDD" },
+      { name: "Docker", icon: Box, color: "#2496ED" },
+      { name: "Swagger", icon: FileText, color: "#007ACC" },
+      { name: "Linux", icon: Atom, color: "#fff" },
+      { name: "CI/CD", icon: RefreshCcw, color: "#fff" },
+      { name: "JWT/Auth", icon: ShieldCheck, color: "#fff" },
     ],
   },
 ]
@@ -83,7 +95,7 @@ export default function Skills() {
                         className="size-7 rounded-md flex items-center justify-center text-base shrink-0 glass group-hover/skill:scale-110 transition-transform"
                         style={{ color: skill.color }}
                       >
-                        {skill.icon}
+                            <skill.icon className="size-4" />
                       </span>
                       <span className="group-hover/skill:text-zinc-300 transition-colors">
                         {skill.name}

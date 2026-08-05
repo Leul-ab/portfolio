@@ -31,9 +31,9 @@ export default function Contact() {
 
               <div className="space-y-4">
                 {[
-                  { label: "Email", value: "leul@example.com" },
+                  { label: "Email", value: "leulabera321@gmail.com" },
                   { label: "Location", value: "Addis Ababa, Ethiopia" },
-                  { label: "Phone", value: "+251 911 234 567" },
+                  { label: "Phone", value: "+251 979 254 066" },
                 ].map((item) => (
                   <div key={item.label}>
                     <p className="text-zinc-500 text-xs uppercase tracking-wider">

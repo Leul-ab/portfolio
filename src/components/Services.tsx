@@ -4,17 +4,17 @@ const services = [
   {
     icon: "⚡",
     title: "Web Development",
-    desc: "Fast, responsive web apps built with React, Next.js, and modern front-end tooling.",
+    desc: "Fast, responsive web apps built with Laravel, React, TypeScript, and modern front-end tooling.",
   },
   {
     icon: "🔧",
     title: "API & Backend",
-    desc: "Scalable REST and GraphQL APIs with Node.js, Python, PostgreSQL, and cloud deployment.",
+    desc: "Scalable REST and GraphQL APIs with C#, PostgreSQL, Swagger and cloud deployment.",
   },
   {
-    icon: "🎨",
-    title: "UI/UX Design",
-    desc: "Clean, accessible interfaces designed with Figma and implemented pixel-perfect in code.",
+    icon: "🗄️",
+    title: "Database Design",
+    desc: "Efficient, well-structured database schemas designed for performance and scalability.",
   },
   {
     icon: "☁️",

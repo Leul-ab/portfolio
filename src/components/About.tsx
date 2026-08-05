@@ -18,9 +18,6 @@ export default function About() {
               <div className="aspect-square rounded-2xl glass shine flex items-center justify-center group-hover:border-indigo-500/20 transition-colors">
                 <span className="text-6xl">👨‍💻</span>
               </div>
-              <div className="absolute -bottom-4 -right-4 size-32 rounded-xl glass shine hidden md:flex items-center justify-center group-hover:border-indigo-500/20 transition-colors">
-                <span className="text-3xl">🚀</span>
-              </div>
             </div>
           </Reveal>
 
@@ -32,7 +29,7 @@ export default function About() {
                 problems into simple, elegant solutions.
               </p>
               <p className="text-zinc-400 leading-relaxed">
-                My stack spans React, TypeScript, Node.js, and modern databases.
+                My stack spans Laravel, C# .NET,React, TypeScript, Node.js, and modern databases.
                 I care about performance, accessibility, and writing maintainable
                 code that scales.
               </p>
@@ -40,9 +37,8 @@ export default function About() {
               <div className="grid grid-cols-2 gap-4 pt-4">
                 {[
                   { label: "Location", value: "Addis Ababa, Ethiopia" },
-                  { label: "Email", value: "leul@example.com" },
+                  { label: "Email", value: "leulabera321@gmail.com" },
                   { label: "Freelance", value: "Available" },
-                  { label: "Experience", value: "3+ Years" },
                 ].map((item) => (
                   <div key={item.label}>
                     <p className="text-zinc-500 text-xs uppercase tracking-wider">

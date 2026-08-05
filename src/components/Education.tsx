@@ -2,14 +2,9 @@ import Reveal from "./Reveal"
 
 const education = [
   {
-    degree: "MSc in Computer Science",
-    school: "University of Technology",
-    period: "2023 – 2025",
-  },
-  {
-    degree: "BSc in Software Engineering",
-    school: "Addis Ababa University",
-    period: "2018 – 2022",
+    degree: "Bachelor's Degree in Computer Science",
+    school: "St Mary's University",
+    period: "2022 – 2026",
   },
 ]
 
