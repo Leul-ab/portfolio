@@ -41,12 +41,12 @@ const projects = [
   },
 ]
 
-const filters = [
+const filters: { label: string; value: string }[] = [
   //{ label: "All", value: "all" },
   // { label: "Full Stack", value: "fullstack" },
   // { label: "Frontend", value: "frontend" },
   // { label: "Backend API", value: "Backend API" }
-] as const
+]
 
 export default function Projects() {
   const [activeFilter, setActiveFilter] = useState("all")

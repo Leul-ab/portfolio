@@ -106,7 +106,7 @@ function IconContainer({
           ? "bg-indigo-500/20 text-indigo-300 shadow-[0_0_25px_rgba(99,102,241,0.6)]"
           : hovered
             ? "bg-transparent text-indigo-300 shadow-[0_0_25px_rgba(99,102,241,0.55)]"
-            : "bg-transparent text-neutral-300"
+            : "bg-transparent text-zinc-400 dark:text-neutral-300"
       )}
     >
       {active && (

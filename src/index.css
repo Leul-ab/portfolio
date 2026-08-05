@@ -37,10 +37,51 @@ body {
   --color-zinc-200: oklch(27.4% 0.006 286.033);
   --color-zinc-100: oklch(21% 0.006 285.885);
   --color-zinc-50: oklch(14.1% 0.005 285.823);
+
+  --color-indigo-300: oklch(58.5% 0.22 262.5);
+  --color-indigo-400: oklch(50.8% 0.23 262.9);
+}
+
+[data-theme="light"] body {
+  background-image: radial-gradient(
+    ellipse 90% 55% at 50% -8%,
+    oklch(94% 0.035 262) 0%,
+    oklch(98.5% 0 0) 65%
+  );
+  background-attachment: fixed;
 }
 
 [data-theme="light"] ::selection {
-  background-color: color-mix(in oklab, var(--color-indigo-500) 20%, transparent);
+  background-color: color-mix(in oklab, var(--color-indigo-500) 25%, transparent);
+}
+
+[data-theme="light"] .glass {
+  background: color-mix(in oklab, #fff 55%, transparent);
+  box-shadow:
+    0 8px 32px rgba(15, 23, 42, 0.07),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9),
+    inset 0 -1px 0 rgba(15, 23, 42, 0.04);
+}
+
+[data-theme="light"] .glass-hover:hover {
+  background: color-mix(in oklab, #fff 70%, transparent);
+  border-color: color-mix(in oklab, var(--color-zinc-100) 25%, transparent);
+}
+
+[data-theme="light"] .glass-strong {
+  background: color-mix(in oklab, #fff 82%, transparent);
+  box-shadow:
+    0 8px 32px rgba(15, 23, 42, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9),
+    inset 0 -1px 0 rgba(15, 23, 42, 0.05);
+}
+
+[data-theme="light"] .glass-tint {
+  background: color-mix(
+    in oklab,
+    var(--color-indigo-500) 8%,
+    color-mix(in oklab, #fff 50%, transparent)
+  );
 }
 
 /* ─── Liquid Glass Base ─── */
