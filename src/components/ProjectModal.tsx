@@ -76,17 +76,17 @@ export default function ProjectModal({
 
         <div className="flex items-center gap-3">
           <a
-            href={project.links.github}
+            href="https://github.com/Leul-ab"
             className="flex-1 text-center px-4 py-2.5 rounded-lg glass glass-hover text-zinc-300 hover:text-white text-sm font-medium transition-all"
           >
             View on GitHub
           </a>
-          <a
+          {/* <a
             href={project.links.live}
             className="flex-1 text-center px-4 py-2.5 rounded-lg bg-indigo-500 hover:bg-indigo-400 text-white text-sm font-medium transition-all"
           >
             Live Demo
-          </a>
+          </a> */}
         </div>
       </motion.div>
     </motion.div>
