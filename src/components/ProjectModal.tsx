@@ -5,7 +5,8 @@ interface Project {
   title: string
   desc: string
   tags: string[]
-  links: { github: string; live: string }
+  image: string
+  links?: { github?: string; live?: string }
 }
 
 export default function ProjectModal({
@@ -15,6 +16,9 @@ export default function ProjectModal({
   project: Project
   onClose: () => void
 }) {
+  const githubLink = project.links?.github || "https://github.com/Leul-ab"
+  const liveLink = project.links?.live
+
   useEffect(() => {
     document.body.style.overflow = "hidden"
     const handler = (e: KeyboardEvent) => {
@@ -54,8 +58,12 @@ export default function ProjectModal({
           </svg>
         </button>
 
-        <div className="h-40 rounded-xl bg-gradient-to-br from-indigo-500/15 to-purple-500/15 border border-zinc-800/20 flex items-center justify-center mb-6">
-          <span className="text-5xl opacity-50">📁</span>
+        <div className="h-52 overflow-hidden rounded-xl border border-zinc-800/20 mb-6 bg-gradient-to-br from-indigo-500/15 to-purple-500/15">
+          <img
+            src={project.image}
+            alt={project.title}
+            className="h-full w-full object-cover"
+          />
         </div>
 
         <h3 className="text-xl font-bold text-zinc-100 mb-3">{project.title}</h3>
@@ -74,19 +82,26 @@ export default function ProjectModal({
           ))}
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className={`flex items-center gap-3 ${liveLink ? "" : "justify-center"}`}>
           <a
-            href="https://github.com/Leul-ab"
-            className="flex-1 text-center px-4 py-2.5 rounded-lg glass glass-hover text-zinc-300 hover:text-white text-sm font-medium transition-all"
+            href={githubLink}
+            target="_blank"
+            rel="noreferrer"
+            className={`${liveLink ? "flex-1" : "w-full"} text-center px-4 py-2.5 rounded-lg glass glass-hover text-zinc-300 hover:text-white text-sm font-medium transition-all`}
           >
             View on GitHub
           </a>
-          {/* <a
-            href={project.links.live}
-            className="flex-1 text-center px-4 py-2.5 rounded-lg bg-indigo-500 hover:bg-indigo-400 text-white text-sm font-medium transition-all"
-          >
-            Live Demo
-          </a> */}
+
+          {liveLink && (
+            <a
+              href={liveLink}
+              target="_blank"
+              rel="noreferrer"
+              className="flex-1 text-center px-4 py-2.5 rounded-lg bg-indigo-500 hover:bg-indigo-400 text-white text-sm font-medium transition-all"
+            >
+              Live Demo
+            </a>
+          )}
         </div>
       </motion.div>
     </motion.div>

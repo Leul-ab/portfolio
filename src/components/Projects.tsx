@@ -9,35 +9,40 @@ const projects = [
     desc: "End-to-end governmental web app, solution for managing tenants, leases, and payments of Addis Ababa houses with a secure admin dashboard.",
     tags: ["PHP Laravel", "React", "MySQL", "Tailwind CSS"],
     category: "fullstack",
-    links: { github: "#", live: "#" },
+    image: "/betochbureau.png",
+    links: { github: "https://github.com/Robani-G/LTMS", live: "https://aahdabrhrcas.gov.et/" },
   },
   {
     title: "Budget Request And Cashflow",
     desc: "Another End-to-end governmental web app that am working on currently, solution for managing budget requests and cashflow of Addis Ababa with a secure admin dashboard.",
     tags: ["PHP Laravel", "React", "MySQL", "Tailwind CSS"],
     category: "fullstack",
-    links: { github: "#", live: "#" },
+    image: "/financebureau.png",
+    links: { github: "https://github.com/Robani-G/Budget-Request-and-Cashflow-" },
   },
   {
     title: "Digital Menu Management System",
     desc: "A web app for restaurants to manage their digital menus, allowing customers to view and order from the menu online, with a secure admin dashboard for restaurant owners.",
     tags: ["PHP Laravel", "React", "MySQL", "Tailwind CSS"],
     category: "fullstack",
-    links: { github: "#", live: "#" },
+    image: "/mamaskitchen-logo.png",
+    links: { github: "https://github.com/Leul-ab/DMMS"},
   },
   {
     title: "NIB Insurance API",
     desc: "RESTful API for handling insurance claims and policy management with authentication and data validation.",
     tags: ["C#", "Entity Framework", "PostgreSQL", "JWT"],
     category: "Backend API",
-    links: { github: "#", live: "#" },
+    image: "/nibinsurance.png",
+    links: { github: "https://github.com/Leul-ab/NIB-Insurance", live: "https://nib-insurance-1.onrender.com" },
   },
   {
     title: "ArifMenu",
     desc: "Restaurant menu web app with dynamic menu management, order tracking, and responsive design for mobile and desktop.",
     tags: ["C#", "Entity Framework", "PostgreSQL", "JWT"],
     category: "frontend",
-    links: { github: "#", live: "#" },
+    image: "/arifmenu.webp",
+    links: {  },
   },
 ]
 
@@ -116,10 +121,12 @@ export default function Projects() {
                   onClick={() => setSelected(project)}
                   className="relative z-20 w-full text-left group rounded-2xl glass glass-hover shine overflow-hidden transition-all duration-300 cursor-pointer"
                 >
-                <div className="h-48 bg-gradient-to-br from-indigo-500/10 to-purple-500/10 flex items-center justify-center border-b border-zinc-800/20 overflow-hidden">
-                  <span className="text-5xl opacity-40 group-hover:opacity-60 group-hover:scale-110 transition-all duration-500">
-                    📁
-                  </span>
+                <div className="h-56 md:h-64 overflow-hidden rounded-t-2xl border-b border-zinc-800/20 bg-gradient-to-br from-indigo-500/10 to-purple-500/10">
+                  <img
+                    src={project.image}
+                    alt={project.title}
+                    className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                  />
                 </div>
                 <div className="p-6">
                   <h3 className="text-lg font-semibold text-zinc-100 mb-2">
