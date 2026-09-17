@@ -26,7 +26,7 @@ const projects = [
     tags: ["PHP Laravel", "React", "MySQL", "Tailwind CSS"],
     category: "fullstack",
     image: "/mamaskitchen-logo.png",
-    links: { github: "https://github.com/Leul-ab/DMMS"},
+    links: { github: "https://github.com/Leul-ab/DMMS", live: "https://mamaskitchen.ethioinnovation.com/" },
   },
   {
     title: "NIB Insurance API",
