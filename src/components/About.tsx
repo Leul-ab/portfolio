@@ -15,8 +15,12 @@ export default function About() {
         <div className="grid md:grid-cols-2 gap-12 items-center">
           <Reveal direction="left">
             <div className="relative group">
-              <div className="aspect-square rounded-2xl glass shine flex items-center justify-center group-hover:border-indigo-500/20 transition-colors">
-                <span className="text-6xl">👨‍💻</span>
+              <div className="flex aspect-square items-center justify-center">
+                <img
+                  src={`${import.meta.env.BASE_URL}leul_image.png`}
+                  alt="Leul Abera"
+                  className="h-[92%] w-[98%] rounded-2xl object-cover transition-transform duration-500 group-hover:scale-[0.97]"
+                />
               </div>
             </div>
           </Reveal>
@@ -29,7 +33,7 @@ export default function About() {
                 problems into simple, elegant solutions.
               </p>
               <p className="text-zinc-400 leading-relaxed">
-                My stack spans Laravel, C# .NET,React, TypeScript, Node.js, and modern databases.
+                My stack spans PHP Laravel, C# .NET, React, TypeScript, Node.js, and modern databases.
                 I care about performance, accessibility, and writing maintainable
                 code that scales.
               </p>
