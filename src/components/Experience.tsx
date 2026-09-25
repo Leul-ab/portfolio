@@ -6,6 +6,7 @@ import {
   CalendarDays,
   CheckCircle2,
   Code2,
+  ExternalLink,
   MapPin,
 } from "lucide-react"
 import Reveal from "./Reveal"
@@ -13,6 +14,7 @@ import Reveal from "./Reveal"
 interface Job {
   role: string
   company: string
+  companyUrl: string
   period: string
   location: string
   current?: boolean
@@ -25,6 +27,7 @@ const jobs: Job[] = [
   {
     role: "Full Stack Developer",
     company: "Ethio Innovation",
+    companyUrl: "https://ethioinnovation.com/",
     period: "May 2026 – Present",
     location: "Addis Ababa, Ethiopia",
     current: true,
@@ -46,6 +49,7 @@ const jobs: Job[] = [
   {
     role: "Backend Developer",
     company: "Arifpay",
+    companyUrl: "https://arifpay.net/",
     period: "Oct 2025 – Jan 2026",
     location: "Addis Ababa, Ethiopia",
     description:
@@ -110,7 +114,6 @@ export default function Experience() {
         <div className="relative">
           {/* Timeline line */}
           <div className="absolute bottom-0 left-[17px] top-0 w-px bg-gradient-to-b from-indigo-500/60 via-purple-500/30 to-transparent md:left-[23px]" />
-
           <div className="space-y-12">
             {jobs.map((job, i) => (
               <Reveal
@@ -124,7 +127,6 @@ export default function Experience() {
                     {job.current && (
                       <span className="absolute h-5 w-5 animate-ping rounded-full bg-indigo-500/30" />
                     )}
-
                     <span
                       className={`relative h-3 w-3 rounded-full border-2 border-zinc-950 ${
                         job.current
@@ -208,6 +210,19 @@ export default function Experience() {
                             </div>
                           </div>
                         </div>
+
+                        <a
+                          href={job.companyUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          aria-label={`Visit ${job.company} website`}
+                          className="group/company inline-flex h-fit shrink-0 items-center gap-1.5 self-start rounded-md border border-indigo-500/30 bg-indigo-500/10 px-2.5 py-1 text-sm font-medium text-indigo-300 transition-all hover:border-indigo-400/60 hover:bg-indigo-500/20 hover:text-indigo-200"
+                        >
+                          <span className="text-[11px] font-semibold uppercase tracking-wide text-indigo-400/80">
+                            Visit website
+                          </span>
+                          <ExternalLink className="h-3 w-3 opacity-60 transition-transform group-hover/company:-translate-y-0.5 group-hover/company:translate-x-0.5" />
+                        </a>
                       </div>
 
                       {/* Description */}
