@@ -2,8 +2,7 @@ services:
   - type: web
     name: leul-portfolio-api
     runtime: node
-    # A persistent disk requires a paid instance type; the free plan wipes files on every restart/deploy.
-    plan: starter
+    plan: free
     buildCommand: npm ci
     startCommand: npm start
     healthCheckPath: /api/health
@@ -12,18 +11,16 @@ services:
         value: "22"
       - key: NODE_ENV
         value: production
-      - key: DATA_DIR
-        value: /var/data
-      - key: UPLOADS_DIR
-        value: /var/data/uploads
       # Hops: Render load balancer + Vercel rewrite proxy.
       - key: TRUST_PROXY
         value: "2"
+      # Neon Postgres connection string (postgresql://...?sslmode=require)
+      - key: DATABASE_URL
+        sync: false
+      # Cloudinary dashboard > API Keys: cloudinary://<api_key>:<api_secret>@<cloud_name>
+      - key: CLOUDINARY_URL
+        sync: false
       - key: ADMIN_USERNAME
         sync: false
       - key: ADMIN_PASSWORD
         sync: false
-    disk:
-      name: portfolio-data
-      mountPath: /var/data
-      sizeGB: 1

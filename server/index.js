@@ -3,29 +3,35 @@ import crypto from "node:crypto"
 import fs from "node:fs"
 import path from "node:path"
 import { fileURLToPath } from "node:url"
-import Database from "better-sqlite3"
+import { v2 as cloudinary } from "cloudinary"
 import express from "express"
 import multer from "multer"
+import pg from "pg"
 
 const rootDirectory = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..")
-// On Render, point these at the persistent disk (e.g. DATA_DIR=/var/data, UPLOADS_DIR=/var/data/uploads).
-const dataDirectory = path.resolve(process.env.DATA_DIR || path.join(rootDirectory, "data"))
-const uploadsDirectory = path.resolve(process.env.UPLOADS_DIR || path.join(rootDirectory, "public", "uploads"))
+const uploadsDirectory = path.join(rootDirectory, "public", "uploads")
 const buildDirectory = path.join(rootDirectory, "dist")
 const port = Number(process.env.PORT || 3001)
 
-fs.mkdirSync(dataDirectory, { recursive: true })
-fs.mkdirSync(uploadsDirectory, { recursive: true })
+if (!process.env.DATABASE_URL) {
+  console.error("DATABASE_URL is not set. Add your Neon Postgres connection string to the environment (see .env.example).")
+  process.exit(1)
+}
 
-const database = new Database(path.join(dataDirectory, "portfolio.sqlite"))
-database.pragma("journal_mode = WAL")
-database.exec(`
+// Images go to Cloudinary when CLOUDINARY_URL is set (production); otherwise to public/uploads for local development.
+const useCloudinary = Boolean(process.env.CLOUDINARY_URL)
+if (!useCloudinary) fs.mkdirSync(uploadsDirectory, { recursive: true })
+
+const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL, max: 5 })
+const query = async (text, params) => (await pool.query(text, params)).rows
+
+await pool.query(`
   CREATE TABLE IF NOT EXISTS content (
     id INTEGER PRIMARY KEY CHECK (id = 1),
     value TEXT NOT NULL
   );
   CREATE TABLE IF NOT EXISTS projects (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    id SERIAL PRIMARY KEY,
     title TEXT NOT NULL,
     description TEXT NOT NULL,
     tags TEXT NOT NULL,
@@ -37,17 +43,17 @@ database.exec(`
     position INTEGER NOT NULL DEFAULT 0
   );
   CREATE TABLE IF NOT EXISTS messages (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    id SERIAL PRIMARY KEY,
     name TEXT NOT NULL,
     email TEXT NOT NULL,
     subject TEXT NOT NULL,
     message TEXT NOT NULL,
-    is_read INTEGER NOT NULL DEFAULT 0,
-    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+    is_read BOOLEAN NOT NULL DEFAULT FALSE,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
   );
   CREATE TABLE IF NOT EXISTS sessions (
     token_hash TEXT PRIMARY KEY,
-    expires_at INTEGER NOT NULL
+    expires_at BIGINT NOT NULL
   );
 `)
 
@@ -129,27 +135,45 @@ const seededProjects = [
   },
 ]
 
-if (!database.prepare("SELECT id FROM content WHERE id = 1").get()) {
-  database.prepare("INSERT INTO content (id, value) VALUES (1, ?)").run(JSON.stringify(defaultContent))
+const insertProjectSql = `
+  INSERT INTO projects (title, description, tags, category, image, links, image_fit, image_bg, position)
+  VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+  RETURNING *
+`
+function projectParams(project, position) {
+  return [
+    project.title,
+    project.description,
+    JSON.stringify(project.tags),
+    project.category,
+    project.image,
+    JSON.stringify(project.links),
+    project.imageFit || null,
+    project.imageBg || null,
+    position,
+  ]
 }
-if (database.prepare("SELECT COUNT(*) AS count FROM projects").get().count === 0) {
-  const insertProject = database.prepare(`
-    INSERT INTO projects (title, description, tags, category, image, links, image_fit, image_bg, position)
-    VALUES (@title, @description, @tags, @category, @image, @links, @image_fit, @image_bg, @position)
-  `)
-  const seedProjects = database.transaction(() => {
-    seededProjects.forEach((project, position) => {
-      insertProject.run({
-        ...project,
-        tags: JSON.stringify(project.tags),
-        links: JSON.stringify(project.links),
-        image_fit: project.imageFit || null,
-        image_bg: project.imageBg || null,
-        position,
-      })
-    })
-  })
-  seedProjects()
+
+await query("INSERT INTO content (id, value) VALUES (1, $1) ON CONFLICT (id) DO NOTHING", [JSON.stringify(defaultContent)])
+{
+  const client = await pool.connect()
+  try {
+    await client.query("BEGIN")
+    // Lock so two instances starting together cannot both seed.
+    await client.query("LOCK TABLE projects IN EXCLUSIVE MODE")
+    const { rows } = await client.query("SELECT COUNT(*)::int AS count FROM projects")
+    if (rows[0].count === 0) {
+      for (const [position, project] of seededProjects.entries()) {
+        await client.query(insertProjectSql, projectParams(project, position))
+      }
+    }
+    await client.query("COMMIT")
+  } catch (error) {
+    await client.query("ROLLBACK")
+    throw error
+  } finally {
+    client.release()
+  }
 }
 
 const app = express()
@@ -166,10 +190,10 @@ app.use((request, response, next) => {
   next()
 })
 app.use(express.json({ limit: "32kb" }))
-app.use("/uploads", express.static(uploadsDirectory, { maxAge: "1d" }))
+if (!useCloudinary) app.use("/uploads", express.static(uploadsDirectory, { maxAge: "1d" }))
 
 const contentFields = Object.keys(defaultContent)
-const getContent = () => JSON.parse(database.prepare("SELECT value FROM content WHERE id = 1").get().value)
+const getContent = async () => JSON.parse((await query("SELECT value FROM content WHERE id = 1"))[0].value)
 const encodeProject = (row) => ({
   id: row.id,
   title: row.title,
@@ -181,8 +205,7 @@ const encodeProject = (row) => ({
   ...(row.image_fit ? { imageFit: row.image_fit } : {}),
   ...(row.image_bg ? { imageBg: row.image_bg } : {}),
 })
-const getProjects = () =>
-  database.prepare("SELECT * FROM projects ORDER BY position, id").all().map(encodeProject)
+const getProjects = async () => (await query("SELECT * FROM projects ORDER BY position, id")).map(encodeProject)
 
 function readCookie(request, name) {
   const cookie = request.headers.cookie?.split(";").map((part) => part.trim()).find((part) => part.startsWith(`${name}=`))
@@ -193,13 +216,13 @@ function hashToken(token) {
   return crypto.createHash("sha256").update(token).digest("hex")
 }
 
-function requireAdmin(request, response, next) {
+async function requireAdmin(request, response, next) {
   const token = readCookie(request, "portfolio_session")
   if (!token) return response.status(401).json({ error: "Authentication required." })
   const tokenHash = hashToken(token)
-  const session = database.prepare("SELECT expires_at FROM sessions WHERE token_hash = ?").get(tokenHash)
-  if (!session || session.expires_at < Date.now()) {
-    database.prepare("DELETE FROM sessions WHERE token_hash = ?").run(tokenHash)
+  const [session] = await query("SELECT expires_at FROM sessions WHERE token_hash = $1", [tokenHash])
+  if (!session || Number(session.expires_at) < Date.now()) {
+    await query("DELETE FROM sessions WHERE token_hash = $1", [tokenHash])
     return response.status(401).json({ error: "Your session has expired. Sign in again." })
   }
   next()
@@ -247,6 +270,10 @@ function limitFailedLogins(limit, windowMs) {
   }
 }
 
+function clientError(message) {
+  return Object.assign(new Error(message), { status: 400 })
+}
+
 const imageTypes = new Map([
   ["image/jpeg", ".jpg"],
   ["image/png", ".png"],
@@ -254,37 +281,50 @@ const imageTypes = new Map([
   ["image/gif", ".gif"],
 ])
 const upload = multer({
-  storage: multer.diskStorage({
-    destination: uploadsDirectory,
-    filename: (_request, file, callback) => {
-      callback(null, `${crypto.randomUUID()}${imageTypes.get(file.mimetype) || ".bin"}`)
-    },
-  }),
+  storage: useCloudinary
+    ? multer.memoryStorage()
+    : multer.diskStorage({
+        destination: uploadsDirectory,
+        filename: (_request, file, callback) => {
+          callback(null, `${crypto.randomUUID()}${imageTypes.get(file.mimetype) || ".bin"}`)
+        },
+      }),
   limits: { fileSize: 5 * 1024 * 1024, files: 1 },
   fileFilter: (_request, file, callback) => {
-    if (!imageTypes.has(file.mimetype)) return callback(new Error("Upload a JPG, PNG, WebP, or GIF image."))
+    if (!imageTypes.has(file.mimetype)) return callback(clientError("Upload a JPG, PNG, WebP, or GIF image."))
     callback(null, true)
   },
 })
 
-app.get("/api/health", (_request, response) => response.json({ ok: true }))
-app.get("/api/content", (_request, response) => response.json(getContent()))
-app.get("/api/projects", (_request, response) => response.json(getProjects()))
+function uploadToCloudinary(buffer) {
+  return new Promise((resolve, reject) => {
+    cloudinary.uploader
+      .upload_stream({ folder: "portfolio", resource_type: "image" }, (error, result) => {
+        if (error || !result) return reject(error || new Error("Image upload failed."))
+        resolve(result.secure_url)
+      })
+      .end(buffer)
+  })
+}
 
-app.post("/api/contact", limitRequests(5, 15 * 60 * 1000, "Please wait before sending another message."), (request, response) => {
+app.get("/api/health", (_request, response) => response.json({ ok: true }))
+app.get("/api/content", async (_request, response) => response.json(await getContent()))
+app.get("/api/projects", async (_request, response) => response.json(await getProjects()))
+
+app.post("/api/contact", limitRequests(5, 15 * 60 * 1000, "Please wait before sending another message."), async (request, response) => {
   const { name, email, subject = "", message } = request.body || {}
-  if (typeof name !== "string" || typeof email !== "string" || typeof message !== "string") {
+  if (typeof name !== "string" || typeof email !== "string" || typeof message !== "string" || typeof subject !== "string") {
     return response.status(400).json({ error: "Please complete the required fields." })
   }
   const clean = { name: name.trim(), email: email.trim(), subject: subject.trim(), message: message.trim() }
   if (!clean.name || clean.name.length > 120 || clean.email.length > 254 || !/^\S+@\S+\.\S+$/.test(clean.email) || clean.subject.length > 180 || !clean.message || clean.message.length > 5000) {
     return response.status(400).json({ error: "Check the name, email, and message lengths and try again." })
   }
-  database.prepare("INSERT INTO messages (name, email, subject, message) VALUES (?, ?, ?, ?)").run(clean.name, clean.email, clean.subject, clean.message)
+  await query("INSERT INTO messages (name, email, subject, message) VALUES ($1, $2, $3, $4)", [clean.name, clean.email, clean.subject, clean.message])
   response.status(201).json({ message: "Message received." })
 })
 
-app.post("/api/admin/login", limitFailedLogins(8, 15 * 60 * 1000), (request, response) => {
+app.post("/api/admin/login", limitFailedLogins(8, 15 * 60 * 1000), async (request, response) => {
   const username = process.env.ADMIN_USERNAME || ""
   const password = process.env.ADMIN_PASSWORD || ""
   if (!username || !password) {
@@ -305,7 +345,8 @@ app.post("/api/admin/login", limitFailedLogins(8, 15 * 60 * 1000), (request, res
   }
   const token = crypto.randomBytes(32).toString("base64url")
   const expiresAt = Date.now() + 7 * 24 * 60 * 60 * 1000
-  database.prepare("INSERT INTO sessions (token_hash, expires_at) VALUES (?, ?)").run(hashToken(token), expiresAt)
+  await query("DELETE FROM sessions WHERE expires_at < $1", [Date.now()])
+  await query("INSERT INTO sessions (token_hash, expires_at) VALUES ($1, $2)", [hashToken(token), expiresAt])
   response.cookie("portfolio_session", token, {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
@@ -317,15 +358,15 @@ app.post("/api/admin/login", limitFailedLogins(8, 15 * 60 * 1000), (request, res
 })
 
 app.get("/api/admin/session", requireAdmin, (_request, response) => response.json({ authenticated: true }))
-app.post("/api/admin/logout", (request, response) => {
+app.post("/api/admin/logout", async (request, response) => {
   const token = readCookie(request, "portfolio_session")
-  if (token) database.prepare("DELETE FROM sessions WHERE token_hash = ?").run(hashToken(token))
+  if (token) await query("DELETE FROM sessions WHERE token_hash = $1", [hashToken(token)])
   response.clearCookie("portfolio_session", { httpOnly: true, sameSite: "strict", secure: process.env.NODE_ENV === "production", path: "/" })
   response.json({ authenticated: false })
 })
 
-app.put("/api/admin/content", requireAdmin, (request, response) => {
-  const current = getContent()
+app.put("/api/admin/content", requireAdmin, async (request, response) => {
+  const current = await getContent()
   const nextContent = { ...current }
   for (const field of contentFields) {
     if (typeof request.body?.[field] !== "string") return response.status(400).json({ error: `The ${field} field must be text.` })
@@ -333,13 +374,14 @@ app.put("/api/admin/content", requireAdmin, (request, response) => {
     if (value.length > 5000) return response.status(400).json({ error: `${field} is too long.` })
     nextContent[field] = value
   }
-  database.prepare("UPDATE content SET value = ? WHERE id = 1").run(JSON.stringify(nextContent))
+  await query("UPDATE content SET value = $1 WHERE id = 1", [JSON.stringify(nextContent)])
   response.json(nextContent)
 })
 
-app.post("/api/admin/upload", requireAdmin, upload.single("image"), (request, response) => {
+app.post("/api/admin/upload", requireAdmin, upload.single("image"), async (request, response) => {
   if (!request.file) return response.status(400).json({ error: "Choose an image to upload." })
-  response.status(201).json({ url: `/uploads/${request.file.filename}` })
+  const url = useCloudinary ? await uploadToCloudinary(request.file.buffer) : `/uploads/${request.file.filename}`
+  response.status(201).json({ url })
 })
 
 function validateProject(body) {
@@ -365,59 +407,61 @@ function validateProject(body) {
   return { title, description, tags, category, image, links, imageFit: body.imageFit === "contain" ? "contain" : null, imageBg: typeof body.imageBg === "string" ? body.imageBg.slice(0, 80) : null }
 }
 
-const saveProject = database.prepare(`
-  INSERT INTO projects (title, description, tags, category, image, links, image_fit, image_bg, position)
-  VALUES (@title, @description, @tags, @category, @image, @links, @image_fit, @image_bg, @position)
-`)
-function projectRow(project, position) {
-  return {
-    ...project,
-    tags: JSON.stringify(project.tags),
-    links: JSON.stringify(project.links),
-    image_fit: project.imageFit,
-    image_bg: project.imageBg,
-    position,
-  }
+const parseId = (value) => {
+  const id = Number(value)
+  return Number.isInteger(id) && id > 0 && id <= 2147483647 ? id : null
 }
 
-app.post("/api/admin/projects", requireAdmin, (request, response) => {
+app.post("/api/admin/projects", requireAdmin, async (request, response) => {
   const project = validateProject(request.body)
   if (!project) return response.status(400).json({ error: "Check the project details and links." })
-  const position = database.prepare("SELECT COALESCE(MAX(position), -1) + 1 AS position FROM projects").get().position
-  const result = saveProject.run(projectRow(project, position))
-  response.status(201).json(encodeProject(database.prepare("SELECT * FROM projects WHERE id = ?").get(result.lastInsertRowid)))
+  const [{ position }] = await query("SELECT COALESCE(MAX(position), -1) + 1 AS position FROM projects")
+  const [row] = await query(insertProjectSql, projectParams(project, position))
+  response.status(201).json(encodeProject(row))
 })
 
-app.put("/api/admin/projects/:id", requireAdmin, (request, response) => {
+app.put("/api/admin/projects/:id", requireAdmin, async (request, response) => {
+  const id = parseId(request.params.id)
   const project = validateProject(request.body)
   if (!project) return response.status(400).json({ error: "Check the project details and links." })
-  const result = database.prepare(`
-    UPDATE projects SET title=@title, description=@description, tags=@tags, category=@category,
-      image=@image, links=@links, image_fit=@image_fit, image_bg=@image_bg WHERE id=@id
-  `).run({ ...projectRow(project, 0), id: Number(request.params.id) })
-  if (!result.changes) return response.status(404).json({ error: "Project not found." })
-  response.json(encodeProject(database.prepare("SELECT * FROM projects WHERE id = ?").get(Number(request.params.id))))
+  const params = projectParams(project, 0).slice(0, 8)
+  const [row] = id
+    ? await query(
+        `UPDATE projects SET title=$1, description=$2, tags=$3, category=$4, image=$5, links=$6, image_fit=$7, image_bg=$8
+         WHERE id=$9 RETURNING *`,
+        [...params, id],
+      )
+    : []
+  if (!row) return response.status(404).json({ error: "Project not found." })
+  response.json(encodeProject(row))
 })
 
-app.delete("/api/admin/projects/:id", requireAdmin, (request, response) => {
-  const result = database.prepare("DELETE FROM projects WHERE id = ?").run(Number(request.params.id))
-  if (!result.changes) return response.status(404).json({ error: "Project not found." })
+app.delete("/api/admin/projects/:id", requireAdmin, async (request, response) => {
+  const id = parseId(request.params.id)
+  const rows = id ? await query("DELETE FROM projects WHERE id = $1 RETURNING id", [id]) : []
+  if (!rows.length) return response.status(404).json({ error: "Project not found." })
   response.status(204).end()
 })
 
-app.get("/api/admin/messages", requireAdmin, (_request, response) => {
-  response.json(database.prepare("SELECT id, name, email, subject, message, is_read AS isRead, created_at AS createdAt FROM messages ORDER BY id DESC").all())
+app.get("/api/admin/messages", requireAdmin, async (_request, response) => {
+  response.json(await query(`
+    SELECT id, name, email, subject, message, is_read AS "isRead",
+      to_char(created_at AT TIME ZONE 'UTC', 'YYYY-MM-DD HH24:MI:SS') AS "createdAt"
+    FROM messages ORDER BY id DESC
+  `))
 })
 
-app.patch("/api/admin/messages/:id", requireAdmin, (request, response) => {
-  const result = database.prepare("UPDATE messages SET is_read = ? WHERE id = ?").run(request.body?.isRead ? 1 : 0, Number(request.params.id))
-  if (!result.changes) return response.status(404).json({ error: "Message not found." })
+app.patch("/api/admin/messages/:id", requireAdmin, async (request, response) => {
+  const id = parseId(request.params.id)
+  const rows = id ? await query("UPDATE messages SET is_read = $1 WHERE id = $2 RETURNING id", [Boolean(request.body?.isRead), id]) : []
+  if (!rows.length) return response.status(404).json({ error: "Message not found." })
   response.json({ updated: true })
 })
 
-app.delete("/api/admin/messages/:id", requireAdmin, (request, response) => {
-  const result = database.prepare("DELETE FROM messages WHERE id = ?").run(Number(request.params.id))
-  if (!result.changes) return response.status(404).json({ error: "Message not found." })
+app.delete("/api/admin/messages/:id", requireAdmin, async (request, response) => {
+  const id = parseId(request.params.id)
+  const rows = id ? await query("DELETE FROM messages WHERE id = $1 RETURNING id", [id]) : []
+  if (!rows.length) return response.status(404).json({ error: "Message not found." })
   response.status(204).end()
 })
 
@@ -430,10 +474,16 @@ app.get("/{*path}", (_request, response) => {
 })
 
 app.use((error, _request, response, _next) => {
-  if (error instanceof multer.MulterError && error.code === "LIMIT_FILE_SIZE") {
-    return response.status(400).json({ error: "Images must be 5 MB or smaller." })
+  if (error instanceof multer.MulterError) {
+    const message = error.code === "LIMIT_FILE_SIZE" ? "Images must be 5 MB or smaller." : error.message
+    return response.status(400).json({ error: message })
   }
-  response.status(400).json({ error: error.message || "The request could not be processed." })
+  const status = error.status || error.statusCode || 500
+  if (status >= 500) {
+    console.error(error)
+    return response.status(500).json({ error: "Something went wrong on the server. Try again shortly." })
+  }
+  response.status(status).json({ error: error.message || "The request could not be processed." })
 })
 
 app.listen(port, () => console.log(`Portfolio API listening on http://localhost:${port}`))

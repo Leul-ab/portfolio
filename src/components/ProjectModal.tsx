@@ -54,10 +54,9 @@ export default function ProjectModal({
     }
   }, [onClose])
 
-  const imageSrc = `${import.meta.env.BASE_URL}${project.image.replace(
-    /^\//,
-    ""
-  )}`
+  const imageSrc = project.image.startsWith("http")
+    ? project.image
+    : `${import.meta.env.BASE_URL}${project.image.replace(/^\//, "")}`
 
   return (
     <motion.div

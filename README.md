@@ -1,50 +1,48 @@
 # Leul Abera Portfolio
 
-React, TypeScript, and Vite frontend with a Node.js/Express API. The API stores editable site content, projects, admin sessions, and contact messages in SQLite.
+React, TypeScript, and Vite frontend with a Node.js/Express API. The API stores editable site content, projects, admin sessions, and contact messages in Postgres (Neon). Uploaded images go to Cloudinary.
 
 ## Local Development
 
-Use Node.js 22 or newer. Install dependencies and prepare the local administrator account:
+Use Node.js 22 or newer. Install dependencies and prepare the environment:
 
 ```powershell
 npm install
 Copy-Item .env.example .env
 ```
 
-Edit `.env` and set a unique `ADMIN_USERNAME` and a long `ADMIN_PASSWORD`. Then run both the API and frontend:
+Edit `.env`:
+
+- `ADMIN_USERNAME` / `ADMIN_PASSWORD` – admin login.
+- `DATABASE_URL` – a Neon Postgres connection string (required). Use a separate Neon branch for development so you don't touch production data.
+- `CLOUDINARY_URL` – optional locally; if empty, uploads are saved to `public/uploads/`.
+
+Then run both the API and frontend:
 
 ```powershell
 npm run dev
 ```
 
-Open the Vite URL printed in the terminal and go to `/admin` to sign in. The development server proxies API and upload requests to Express.
+Open the Vite URL printed in the terminal and go to `/admin` to sign in. The development server proxies API and upload requests to Express. Tables are created and seeded automatically on first start.
 
 The admin workspace lets you edit the hero/about/contact details, replace the profile image, add/edit/delete projects, and read or delete contact messages. Contact form submissions are stored in the admin inbox; email notifications are not configured.
 
-## Production
+## Deployment: Vercel (frontend) + Render (API)
 
-Configure `ADMIN_USERNAME`, `ADMIN_PASSWORD` (at least 12 characters), and optionally `PORT` in the hosting environment, then run:
+`vercel.json` rewrites `/api/*` to the Render service, so the browser only talks to the Vercel domain (cookies stay same-site, no CORS needed). All data lives in Neon and Cloudinary, so the free Render plan works: nothing is lost when the server restarts.
 
-```powershell
-npm run build
-npm start
-```
+1. **Neon** – Create a free project at https://neon.tech and copy its connection string (`postgresql://...?sslmode=require`).
+2. **Cloudinary** – Create a free account at https://cloudinary.com and copy the API environment variable from Dashboard > API Keys (`cloudinary://<key>:<secret>@<cloud_name>`).
+3. **Render** – New > Web Service, connect this repo, and use: runtime Node, build command `npm ci`, start command `npm start`, instance type Free, health check path `/api/health`. Add environment variables: `NODE_VERSION=22`, `NODE_ENV=production`, `TRUST_PROXY=2`, `DATABASE_URL`, `CLOUDINARY_URL`, `ADMIN_USERNAME`, `ADMIN_PASSWORD` (12+ characters). (Alternatively New > Blueprint uses `render.yaml`.) Check `https://<service>.onrender.com/api/health` returns `{"ok":true}`.
+4. **Vercel** – Import the repo (Vite preset). If your Render URL differs from `https://leul-portfolio-api.onrender.com`, update the destination in `vercel.json` first.
 
-The Node server serves both the built frontend and the API. Keep the `data/` directory and `public/uploads/` on persistent storage: SQLite data and uploaded images are stored there. These generated files are excluded from Git. Back them up along with the database.
-
-### Split deployment: Vercel (frontend) + Render (API)
-
-The frontend is hosted on Vercel and the Express API on Render. `vercel.json` rewrites `/api/*` and `/uploads/*` to the Render service, so the browser only ever talks to the Vercel domain (cookies stay same-site, no CORS needed).
-
-1. **Render** – New > Blueprint, select this repo. `render.yaml` creates the `leul-portfolio-api` web service with a 1 GB persistent disk at `/var/data` (requires a paid instance; the free plan loses the database and uploads on every restart). Set `ADMIN_USERNAME` and `ADMIN_PASSWORD` (12+ characters) when prompted. Check `https://<service>.onrender.com/api/health` returns `{"ok":true}`.
-2. **Vercel** – Import the repo (Vite preset). If your Render URL differs from `https://leul-portfolio-api.onrender.com`, update both destinations in `vercel.json` before deploying.
-
-Server environment variables: `DATA_DIR` (SQLite location), `UPLOADS_DIR` (uploaded images), `TRUST_PROXY` (number of proxy hops for client IPs, `2` behind Vercel + Render).
+Free Render services sleep after ~15 minutes without traffic; the first request afterwards takes ~30–50 seconds while it wakes up.
 
 ## API Overview
 
 - `GET /api/content` and `GET /api/projects` provide public portfolio content.
 - `POST /api/contact` validates and stores a contact message.
 - `/api/admin/*` provides session-protected content, project, upload, and inbox management.
+- `GET /api/health` is used by Render's health check.
 
 Admin sessions use HTTP-only, same-site cookies. Uploaded images are limited to 5 MB and JPG, PNG, WebP, or GIF formats.
