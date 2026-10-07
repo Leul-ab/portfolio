@@ -1,4 +1,5 @@
 import Reveal from "./Reveal"
+import { useSiteContent } from "../context/SiteContentContext"
 
 const technologies = [
   "Laravel",
@@ -9,13 +10,14 @@ const technologies = [
   "PostgreSQL",
 ]
 
-const details = [
-  { label: "Location", value: "Addis Ababa, Ethiopia" },
-  { label: "Email", value: "leulabera321@gmail.com" },
-  { label: "Availability", value: "Open to opportunities" },
-]
-
 export default function About() {
+  const content = useSiteContent()
+  const details = [
+    { label: "Location", value: content.location },
+    { label: "Email", value: content.email },
+    { label: "Availability", value: content.availability },
+  ]
+
   return (
     <section id="about" className="relative overflow-hidden px-4 py-24 md:py-32">
       {/* Background decoration */}
@@ -49,8 +51,8 @@ export default function About() {
           <Reveal direction="left" className="hidden lg:block">
             <div className="group relative mx-auto w-full max-w-md">
               <img
-                src={`${import.meta.env.BASE_URL}leul_image.png`}
-                alt="Leul Abera"
+                src={content.profileImage}
+                alt={content.heroName}
                 className="block h-auto w-full scale-[1.5] rounded-2xl object-contain transition duration-700 ease-out group-hover:scale-[1.6]"
               />
 
@@ -85,11 +87,7 @@ export default function About() {
 
               <div className="space-y-5">
                 <p className="leading-8 text-zinc-300">
-                  I'm a full-stack developer who enjoys turning ideas and
-                  complex problems into clean, reliable, and intuitive web
-                  applications. I like working across the entire development
-                  process — from designing interfaces to building APIs and
-                  working with databases.
+                  {content.aboutText}
                 </p>
 
                 

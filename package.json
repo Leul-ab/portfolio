@@ -4,15 +4,22 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
+    "dev": "concurrently -k \"node --watch server/index.js\" \"vite\"",
+    "dev:server": "node --watch server/index.js",
     "build": "tsc -b && vite build",
     "lint": "oxlint",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "start": "node server/index.js"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.3.3",
+    "better-sqlite3": "^12.4.1",
+    "concurrently": "^9.2.1",
+    "dotenv": "^16.6.1",
+    "express": "^5.1.0",
     "framer-motion": "^13.0.0",
     "lucide-react": "^1.28.0",
+    "multer": "^2.0.2",
     "react": "^19.2.7",
     "react-dom": "^19.2.7",
     "tailwindcss": "^4.3.3"

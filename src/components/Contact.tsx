@@ -9,38 +9,44 @@ import {
   Send,
 } from "lucide-react"
 import Reveal from "./Reveal"
-
-const contactInfo = [
-  {
-    label: "Email",
-    value: "leulabera321@gmail.com",
-    href: "mailto:leulabera321@gmail.com",
-    icon: Mail,
-  },
-  {
-    label: "Location",
-    value: "Addis Ababa, Ethiopia",
-    icon: MapPin,
-  },
-  {
-    label: "Phone",
-    value: "+251 979 254 066",
-    href: "tel:+251979254066",
-    icon: Phone,
-  },
-]
+import { useSiteContent } from "../context/SiteContentContext"
+import { apiRequest } from "../lib/api"
 
 export default function Contact() {
+  const siteContent = useSiteContent()
   const [sent, setSent] = useState(false)
+  const [sending, setSending] = useState(false)
+  const [error, setError] = useState("")
+  const contactInfo = [
+    { label: "Email", value: siteContent.email, href: `mailto:${siteContent.email}`, icon: Mail },
+    { label: "Location", value: siteContent.location, icon: MapPin },
+    { label: "Phone", value: siteContent.phone, href: `tel:${siteContent.phone.replace(/\s/g, "")}`, icon: Phone },
+  ]
 
-  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault()
-
-    setSent(true)
-
-    setTimeout(() => {
-      setSent(false)
-    }, 3000)
+    setSending(true)
+    setError("")
+    const form = e.currentTarget
+    const fields = new FormData(form)
+    try {
+      await apiRequest("/api/contact", {
+        method: "POST",
+        body: JSON.stringify({
+          name: fields.get("name"),
+          email: fields.get("email"),
+          subject: fields.get("subject"),
+          message: fields.get("message"),
+        }),
+      })
+      form.reset()
+      setSent(true)
+      window.setTimeout(() => setSent(false), 4000)
+    } catch (requestError) {
+      setError(requestError instanceof Error ? requestError.message : "Your message could not be sent. Please try again.")
+    } finally {
+      setSending(false)
+    }
   }
 
   return (
@@ -74,8 +80,7 @@ export default function Contact() {
             </h2>
 
             <p className="mt-5 max-w-2xl text-sm leading-7 text-zinc-400 sm:text-base">
-              Have a project in mind, a job opportunity, or simply want to
-              connect? Send me a message and I&apos;ll get back to you.
+              {siteContent.contactDescription}
             </p>
           </div>
         </Reveal>
@@ -154,8 +159,8 @@ export default function Contact() {
 
                   <div>
                     <p className="text-sm font-medium text-zinc-200">
-                      Available for opportunities
-                    </p>
+                        {siteContent.availability}
+                      </p>
                     <p className="mt-0.5 text-xs text-zinc-500">
                       Open to freelance and full-time work
                     </p>
@@ -252,9 +257,12 @@ export default function Contact() {
                   />
                 </div>
 
+                {error && <p role="alert" className="text-sm text-rose-400">{error}</p>}
+
                 <button
                   type="submit"
-                  className={`group inline-flex w-full items-center justify-center gap-2 rounded-xl px-5 py-3.5 text-sm font-semibold transition-all duration-300 ${
+                  disabled={sending}
+                  className={`group inline-flex w-full items-center justify-center gap-2 rounded-xl px-5 py-3.5 text-sm font-semibold transition-all duration-300 disabled:cursor-wait disabled:opacity-70 ${
                     sent
                       ? "bg-emerald-500 text-white shadow-lg shadow-emerald-500/20"
                       : "bg-indigo-500 text-white shadow-lg shadow-indigo-500/20 hover:-translate-y-0.5 hover:bg-indigo-400 hover:shadow-indigo-500/30 active:translate-y-0"
@@ -268,7 +276,7 @@ export default function Contact() {
                   ) : (
                     <>
                       <Send className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
-                      Send Message
+                      {sending ? "Sending..." : "Send Message"}
                     </>
                   )}
                 </button>

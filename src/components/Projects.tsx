@@ -1,5 +1,5 @@
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { AnimatePresence, motion } from "framer-motion"
 import {
   ArrowUpRight,
@@ -9,6 +9,7 @@ import {
 } from "lucide-react"
 import Reveal from "./Reveal"
 import ProjectModal from "./ProjectModal"
+import { apiRequest } from "../lib/api"
 
 type Project = {
   title: string
@@ -22,9 +23,10 @@ type Project = {
   }
   imageFit?: "cover" | "contain"
   imageBg?: string
+  id?: number
 }
 
-const projects: Project[] = [
+const initialProjects: Project[] = [
   {
     title: "Landlord Tenant Management System",
     desc: "End-to-end governmental web application for managing tenants, leases, and payments of Addis Ababa houses with a secure administrative dashboard.",
@@ -99,8 +101,15 @@ const filters = [
 ]
 
 export default function Projects() {
+  const [projects, setProjects] = useState(initialProjects)
   const [activeFilter, setActiveFilter] = useState("all")
   const [selected, setSelected] = useState<Project | null>(null)
+
+  useEffect(() => {
+    apiRequest<Project[]>("/api/projects")
+      .then(setProjects)
+      .catch(() => undefined)
+  }, [])
 
   const filtered =
     activeFilter === "all"
@@ -180,7 +189,7 @@ export default function Projects() {
             {filtered.map((project, index) => (
               <motion.article
                 layout
-                key={project.title}
+                key={project.id ?? project.title}
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.96 }}
@@ -198,10 +207,9 @@ export default function Projects() {
                   }`}
                 >
                   <img
-                    src={`${import.meta.env.BASE_URL}${project.image.replace(
-                      /^\//,
-                      ""
-                    )}`}
+                    src={project.image.startsWith("http")
+                      ? project.image
+                      : `${import.meta.env.BASE_URL}${project.image.replace(/^\//, "")}`}
                     alt={project.title}
                     className={`h-full w-full ${
                       project.imageFit === "contain"

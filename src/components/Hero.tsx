@@ -1,5 +1,6 @@
 
 import { useEffect, useState } from "react"
+import { useSiteContent } from "../context/SiteContentContext"
 
 const GitHubIcon = () => (
   <svg
@@ -59,6 +60,7 @@ const socials = [
 ]
 
 export default function Hero() {
+  const content = useSiteContent()
   const [index, setIndex] = useState(0)
   const [text, setText] = useState("")
   const [deleting, setDeleting] = useState(false)
@@ -187,7 +189,7 @@ export default function Hero() {
           Hi, I'm{" "}
           <span className="relative">
             <span className="bg-gradient-to-r from-indigo-400 via-purple-400 to-indigo-400 bg-[length:200%_auto] bg-clip-text text-transparent animate-gradient">
-              Leul
+              {content.heroName}
             </span>
 
             {/* Underline */}
@@ -197,11 +199,7 @@ export default function Hero() {
 
         {/* Description */}
         <p className="mx-auto mt-7 max-w-2xl text-base leading-7 text-zinc-400 sm:text-lg md:text-xl md:leading-8">
-          Full-stack developer focused on building{" "}
-          <span className="text-zinc-200">
-            reliable, scalable, and modern web applications
-          </span>{" "}
-          that turn ideas into practical digital experiences.
+          {content.heroIntro}
         </p>
 
         {/* CTAs */}
@@ -232,7 +230,7 @@ export default function Hero() {
 
           {/* Resume */}
           <a
-            href={`${import.meta.env.BASE_URL}LEUL_ABERA_CV.pdf`}
+            href={content.resumeUrl}
             target="_blank"
             rel="noopener noreferrer"
             className="group inline-flex items-center gap-2 rounded-xl border border-white/10 bg-transparent px-6 py-3.5 text-sm font-semibold text-zinc-400 transition-all duration-300 hover:-translate-y-1 hover:border-white/20 hover:bg-white/[0.04] hover:text-zinc-100 active:translate-y-0"

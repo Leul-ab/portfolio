@@ -12,32 +12,38 @@ import BackToTop from "./components/BackToTop"
 import ScrollProgress from "./components/ScrollProgress"
 import Spotlight from "./components/Spotlight"
 import SectionDivider from "./components/SectionDivider"
+import Admin from "./components/Admin"
+import { SiteContentProvider } from "./context/SiteContentContext"
 
 function App() {
+  if (window.location.pathname.startsWith("/admin")) return <Admin />
+
   return (
-    <>
-      <ScrollProgress />
-      <Spotlight />
-      <Header />
-      <main className="relative z-10">
-        <Hero />
-        <About />
-        <SectionDivider />
-        <Services />
-        <SectionDivider />
-        <Skills />
-        <SectionDivider />
-        <Experience />
-        <SectionDivider />
-        <Projects />
-        <SectionDivider />
-        <Education />
-        <SectionDivider />
-        <Contact />
-      </main>
-      <Footer />
-      <BackToTop />
-    </>
+    <SiteContentProvider>
+      <>
+        <ScrollProgress />
+        <Spotlight />
+        <Header />
+        <main className="relative z-10">
+          <Hero />
+          <About />
+          <SectionDivider />
+          <Services />
+          <SectionDivider />
+          <Skills />
+          <SectionDivider />
+          <Experience />
+          <SectionDivider />
+          <Projects />
+          <SectionDivider />
+          <Education />
+          <SectionDivider />
+          <Contact />
+        </main>
+        <Footer />
+        <BackToTop />
+      </>
+    </SiteContentProvider>
   )
 }
 
