@@ -8,8 +8,9 @@ import express from "express"
 import multer from "multer"
 
 const rootDirectory = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..")
-const dataDirectory = path.join(rootDirectory, "data")
-const uploadsDirectory = path.join(rootDirectory, "public", "uploads")
+// On Render, point these at the persistent disk (e.g. DATA_DIR=/var/data, UPLOADS_DIR=/var/data/uploads).
+const dataDirectory = path.resolve(process.env.DATA_DIR || path.join(rootDirectory, "data"))
+const uploadsDirectory = path.resolve(process.env.UPLOADS_DIR || path.join(rootDirectory, "public", "uploads"))
 const buildDirectory = path.join(rootDirectory, "dist")
 const port = Number(process.env.PORT || 3001)
 
@@ -153,6 +154,12 @@ if (database.prepare("SELECT COUNT(*) AS count FROM projects").get().count === 0
 
 const app = express()
 app.disable("x-powered-by")
+// Behind Vercel's rewrite proxy and Render's load balancer, trust the forwarding hops so
+// request.ip is the visitor's IP (used by the rate limiters) instead of the proxy's IP.
+if (process.env.TRUST_PROXY) {
+  const hops = Number(process.env.TRUST_PROXY)
+  app.set("trust proxy", Number.isNaN(hops) ? process.env.TRUST_PROXY : hops)
+}
 app.use((request, response, next) => {
   response.setHeader("X-Content-Type-Options", "nosniff")
   response.setHeader("Referrer-Policy", "strict-origin-when-cross-origin")
@@ -260,6 +267,7 @@ const upload = multer({
   },
 })
 
+app.get("/api/health", (_request, response) => response.json({ ok: true }))
 app.get("/api/content", (_request, response) => response.json(getContent()))
 app.get("/api/projects", (_request, response) => response.json(getProjects()))
 

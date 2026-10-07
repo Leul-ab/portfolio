@@ -1,0 +1,29 @@
+services:
+  - type: web
+    name: leul-portfolio-api
+    runtime: node
+    # A persistent disk requires a paid instance type; the free plan wipes files on every restart/deploy.
+    plan: starter
+    buildCommand: npm ci
+    startCommand: npm start
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      - key: NODE_ENV
+        value: production
+      - key: DATA_DIR
+        value: /var/data
+      - key: UPLOADS_DIR
+        value: /var/data/uploads
+      # Hops: Render load balancer + Vercel rewrite proxy.
+      - key: TRUST_PROXY
+        value: "2"
+      - key: ADMIN_USERNAME
+        sync: false
+      - key: ADMIN_PASSWORD
+        sync: false
+    disk:
+      name: portfolio-data
+      mountPath: /var/data
+      sizeGB: 1
