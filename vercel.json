@@ -4,7 +4,7 @@
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
   "rewrites": [
-    { "source": "/api/:path*", "destination": "https://leul-portfolio-api.onrender.com/api/:path*" },
+    { "source": "/api/:path*", "destination": "https://portfolio-m7f3.onrender.com/api/:path*" },
     { "source": "/((?!.*\\.).*)", "destination": "/index.html" }
   ]
 }
