@@ -389,8 +389,20 @@ app.put("/api/admin/content", requireAdmin, async (request, response) => {
 
 app.post("/api/admin/upload", requireAdmin, upload.single("image"), async (request, response) => {
   if (!request.file) return response.status(400).json({ error: "Choose an image to upload." })
-  const url = useCloudinary ? await uploadToCloudinary(request.file.buffer) : `/uploads/${request.file.filename}`
-  response.status(201).json({ url })
+  if (!useCloudinary) return response.status(201).json({ url: `/uploads/${request.file.filename}` })
+  try {
+    response.status(201).json({ url: await uploadToCloudinary(request.file.buffer) })
+  } catch (error) {
+    console.error("Cloudinary upload failed:", error)
+    const code = error?.http_code
+    const reason =
+      code === 401 || code === 403
+        ? "Cloudinary rejected the credentials. Check CLOUDINARY_URL (api key, secret, and cloud name) on the server."
+        : code === 404
+          ? "Cloudinary cloud name not found. Check the cloud name at the end of CLOUDINARY_URL."
+          : `Image upload to Cloudinary failed${error?.message ? `: ${error.message}` : "."}`
+    response.status(502).json({ error: reason })
+  }
 })
 
 function validateProject(body) {
