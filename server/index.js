@@ -3,7 +3,6 @@ import crypto from "node:crypto"
 import fs from "node:fs"
 import path from "node:path"
 import { fileURLToPath } from "node:url"
-import { v2 as cloudinary } from "cloudinary"
 import express from "express"
 import multer from "multer"
 import pg from "pg"
@@ -19,7 +18,17 @@ if (!process.env.DATABASE_URL) {
 }
 
 // Images go to Cloudinary when CLOUDINARY_URL is set (production); otherwise to public/uploads for local development.
-const useCloudinary = Boolean(process.env.CLOUDINARY_URL)
+// Tolerate common copy/paste mistakes: surrounding whitespace/quotes or a pasted "CLOUDINARY_URL=" prefix.
+const cloudinaryUrl = (process.env.CLOUDINARY_URL || "").trim().replace(/^CLOUDINARY_URL=/, "").replace(/^["']|["']$/g, "")
+if (cloudinaryUrl && !cloudinaryUrl.startsWith("cloudinary://")) {
+  console.error("CLOUDINARY_URL must look like cloudinary://<api_key>:<api_secret>@<cloud_name> (copy it from Cloudinary Dashboard > API Keys), or be removed to disable Cloudinary.")
+  process.exit(1)
+}
+if (cloudinaryUrl) process.env.CLOUDINARY_URL = cloudinaryUrl
+else delete process.env.CLOUDINARY_URL
+const useCloudinary = Boolean(cloudinaryUrl)
+// Imported lazily: the cloudinary package validates CLOUDINARY_URL as soon as it loads.
+const cloudinary = useCloudinary ? (await import("cloudinary")).v2 : null
 if (!useCloudinary) fs.mkdirSync(uploadsDirectory, { recursive: true })
 
 const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL, max: 5 })
