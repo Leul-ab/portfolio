@@ -16,6 +16,10 @@ html {
   color-scheme: dark;
 }
 
+section[id] {
+  scroll-margin-top: 4.5rem;
+}
+
 body {
   @apply bg-zinc-950 text-zinc-100 font-sans antialiased;
   transition: background-color 0.3s ease, color 0.3s ease;

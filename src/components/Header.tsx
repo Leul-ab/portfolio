@@ -52,7 +52,7 @@ export default function Header() {
   }))
 
   return (
-    <header className="pointer-events-none fixed inset-x-0 top-0 z-50 flex justify-center px-3 pt-5 sm:px-4 sm:pt-7">
+    <header className="pointer-events-none fixed inset-x-0 top-0 z-50 flex justify-center px-3 pt-3 sm:px-4 sm:pt-7">
       <div className="pointer-events-auto flex w-full max-w-3xl justify-center">
         <FloatingDock items={items} />
       </div>

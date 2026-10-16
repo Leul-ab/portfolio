@@ -25,7 +25,97 @@ export function FloatingDock({
   items: FloatingDockItem[]
   className?: string
 }) {
-  return <FloatingDockDesktop items={items} className={className} />
+  return (
+    <>
+      <FloatingDockDesktop items={items} className={cn("hidden md:flex", className)} />
+      <FloatingDockMobile items={items} className={cn("flex md:hidden", className)} />
+    </>
+  )
+}
+
+function FloatingDockMobile({
+  items,
+  className,
+}: {
+  items: FloatingDockItem[]
+  className?: string
+}) {
+  return (
+    <nav
+      aria-label="Mobile Navigation"
+      className={cn(
+        "relative mx-auto flex h-12 items-center gap-1 rounded-full border border-zinc-800/80 bg-zinc-950/85 px-2 shadow-xl shadow-black/40 backdrop-blur-xl",
+        "before:pointer-events-none before:absolute before:inset-x-6 before:top-0 before:h-px before:bg-gradient-to-r before:from-transparent before:via-indigo-400/30 before:to-transparent",
+        className
+      )}
+    >
+      {items.map((item) => (
+        <MobileIconContainer key={item.title} {...item} />
+      ))}
+    </nav>
+  )
+}
+
+function MobileIconContainer({
+  title,
+  icon,
+  href,
+  onClick,
+  active,
+}: FloatingDockItem) {
+  const content = (
+    <motion.div
+      whileTap={{ scale: 0.88 }}
+      transition={{ type: "spring", stiffness: 400, damping: 25 }}
+      className={cn(
+        "relative flex h-9 w-9 items-center justify-center rounded-full transition-colors duration-200",
+        active ? "text-indigo-300" : "text-zinc-400 active:text-indigo-300"
+      )}
+    >
+      {/* Smooth sliding active indicator pill */}
+      {active && (
+        <motion.div
+          layoutId="mobileActiveDockPill"
+          transition={{ type: "spring", stiffness: 380, damping: 30 }}
+          className="absolute inset-0 rounded-full border border-indigo-500/30 bg-indigo-500/20 shadow-[0_0_12px_rgba(99,102,241,0.25)]"
+        />
+      )}
+
+      {/* Icon */}
+      <span className="relative z-10 flex h-4 w-4 items-center justify-center">
+        {icon}
+      </span>
+
+      {/* Subtle active dot */}
+      {active && (
+        <span className="absolute -bottom-0.5 left-1/2 h-1 w-1 -translate-x-1/2 rounded-full bg-indigo-400 shadow-[0_0_6px_rgba(129,140,248,0.9)]" />
+      )}
+    </motion.div>
+  )
+
+  if (onClick) {
+    return (
+      <button
+        type="button"
+        onClick={onClick}
+        aria-label={title}
+        className="touch-manipulation p-0.5 outline-none"
+      >
+        {content}
+      </button>
+    )
+  }
+
+  return (
+    <a
+      href={href}
+      aria-label={title}
+      aria-current={active ? "page" : undefined}
+      className="touch-manipulation p-0.5 outline-none"
+    >
+      {content}
+    </a>
+  )
 }
 
 function FloatingDockDesktop({
