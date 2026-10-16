@@ -5,6 +5,7 @@ import path from "node:path"
 import { fileURLToPath } from "node:url"
 import express from "express"
 import multer from "multer"
+import nodemailer from "nodemailer"
 import pg from "pg"
 
 const rootDirectory = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..")
@@ -320,6 +321,74 @@ app.get("/api/health", (_request, response) => response.json({ ok: true }))
 app.get("/api/content", async (_request, response) => response.json(await getContent()))
 app.get("/api/projects", async (_request, response) => response.json(await getProjects()))
 
+const mailTransporter =
+  process.env.GMAIL_USER && process.env.GMAIL_APP_PASSWORD
+    ? nodemailer.createTransport({
+        service: "gmail",
+        auth: {
+          user: process.env.GMAIL_USER,
+          pass: process.env.GMAIL_APP_PASSWORD,
+        },
+      })
+    : null
+
+async function sendNotificationEmail({ name, email, subject, message }) {
+  if (!mailTransporter) {
+    console.log("Email notification skipped: GMAIL_USER or GMAIL_APP_PASSWORD not set in environment.")
+    return
+  }
+
+  const recipient = process.env.NOTIFICATION_EMAIL || process.env.GMAIL_USER
+  const cleanSubject = subject ? subject : "New Contact Submission"
+  const safeMessage = message.replace(/</g, "&lt;").replace(/>/g, "&gt;")
+
+  const html = `
+    <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 24px; border: 1px solid #e4e4e7; border-radius: 12px; background-color: #ffffff; color: #18181b;">
+      <div style="border-bottom: 2px solid #6366f1; padding-bottom: 16px; margin-bottom: 24px;">
+        <h2 style="margin: 0; color: #4338ca; font-size: 20px; font-weight: 700;">New Portfolio Message</h2>
+        <p style="margin: 4px 0 0; color: #71717a; font-size: 13px;">Someone reached out through the contact form on your portfolio.</p>
+      </div>
+
+      <table style="width: 100%; border-collapse: collapse; margin-bottom: 24px;">
+        <tr>
+          <td style="padding: 8px 0; color: #71717a; font-size: 13px; font-weight: 600; width: 100px;">From:</td>
+          <td style="padding: 8px 0; color: #18181b; font-size: 14px; font-weight: 600;">${name}</td>
+        </tr>
+        <tr>
+          <td style="padding: 8px 0; color: #71717a; font-size: 13px; font-weight: 600;">Email:</td>
+          <td style="padding: 8px 0; color: #4f46e5; font-size: 14px;"><a href="mailto:${email}" style="color: #4f46e5; text-decoration: none;">${email}</a></td>
+        </tr>
+        ${
+          subject
+            ? `<tr>
+          <td style="padding: 8px 0; color: #71717a; font-size: 13px; font-weight: 600;">Subject:</td>
+          <td style="padding: 8px 0; color: #18181b; font-size: 14px;">${subject}</td>
+        </tr>`
+            : ""
+        }
+      </table>
+
+      <div style="background-color: #f4f4f5; border-radius: 8px; padding: 16px 20px; margin-bottom: 24px;">
+        <p style="margin: 0 0 8px; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: #71717a;">Message:</p>
+        <p style="margin: 0; font-size: 14px; line-height: 1.6; color: #27272a; white-space: pre-wrap;">${safeMessage}</p>
+      </div>
+
+      <div style="text-align: center; padding-top: 12px; border-top: 1px solid #f4f4f5;">
+        <a href="mailto:${email}?subject=Re: ${encodeURIComponent(cleanSubject)}" style="display: inline-block; background-color: #4f46e5; color: #ffffff; padding: 10px 22px; border-radius: 8px; font-size: 13px; font-weight: 600; text-decoration: none;">Reply to ${name}</a>
+      </div>
+    </div>
+  `
+
+  await mailTransporter.sendMail({
+    from: `"Portfolio Contact" <${process.env.GMAIL_USER}>`,
+    to: recipient,
+    replyTo: email,
+    subject: `[Portfolio] ${cleanSubject} - ${name}`,
+    text: `New contact submission from ${name} (${email}):\n\nSubject: ${cleanSubject}\n\nMessage:\n${message}`,
+    html,
+  })
+}
+
 app.post("/api/contact", limitRequests(5, 15 * 60 * 1000, "Please wait before sending another message."), async (request, response) => {
   const { name, email, subject = "", message } = request.body || {}
   if (typeof name !== "string" || typeof email !== "string" || typeof message !== "string" || typeof subject !== "string") {
@@ -330,6 +399,12 @@ app.post("/api/contact", limitRequests(5, 15 * 60 * 1000, "Please wait before se
     return response.status(400).json({ error: "Check the name, email, and message lengths and try again." })
   }
   await query("INSERT INTO messages (name, email, subject, message) VALUES ($1, $2, $3, $4)", [clean.name, clean.email, clean.subject, clean.message])
+  
+  // Send email notification in the background
+  sendNotificationEmail(clean).catch((error) => {
+    console.error("Failed to send contact notification email:", error)
+  })
+
   response.status(201).json({ message: "Message received." })
 })
 

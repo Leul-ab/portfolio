@@ -25,7 +25,7 @@ npm run dev
 
 Open the Vite URL printed in the terminal and go to `/admin` to sign in. The development server proxies API and upload requests to Express. Tables are created and seeded automatically on first start.
 
-The admin workspace lets you edit the hero/about/contact details, replace the profile image, add/edit/delete projects, and read or delete contact messages. Contact form submissions are stored in the admin inbox; email notifications are not configured.
+The admin workspace lets you edit the hero/about/contact details, replace the profile image, add/edit/delete projects, and read or delete contact messages. Contact form submissions are stored in the admin inbox and instantly forwarded to your Gmail if configured.
 
 ## Deployment: Vercel (frontend) + Render (API)
 
@@ -33,7 +33,7 @@ The admin workspace lets you edit the hero/about/contact details, replace the pr
 
 1. **Neon** – Create a free project at https://neon.tech and copy its connection string (`postgresql://...?sslmode=require`).
 2. **Cloudinary** – Create a free account at https://cloudinary.com and copy the API environment variable from Dashboard > API Keys (`cloudinary://<key>:<secret>@<cloud_name>`).
-3. **Render** – New > Web Service, connect this repo, and use: runtime Node, build command `npm ci`, start command `npm start`, instance type Free, health check path `/api/health`. Add environment variables: `NODE_VERSION=22`, `NODE_ENV=production`, `TRUST_PROXY=2`, `DATABASE_URL`, `CLOUDINARY_URL`, `ADMIN_USERNAME`, `ADMIN_PASSWORD` (12+ characters). (Alternatively New > Blueprint uses `render.yaml`.) Check `https://<service>.onrender.com/api/health` returns `{"ok":true}`.
+3. **Render** – New > Web Service, connect this repo, and use: runtime Node, build command `npm ci`, start command `npm start`, instance type Free, health check path `/api/health`. Add environment variables: `NODE_VERSION=22`, `NODE_ENV=production`, `TRUST_PROXY=2`, `DATABASE_URL`, `CLOUDINARY_URL`, `ADMIN_USERNAME`, `ADMIN_PASSWORD` (12+ characters), `GMAIL_USER`, and `GMAIL_APP_PASSWORD`. (Alternatively New > Blueprint uses `render.yaml`.) Check `https://<service>.onrender.com/api/health` returns `{"ok":true}`.
 4. **Vercel** – Import the repo (Vite preset). If your Render URL differs from `https://leul-portfolio-api.onrender.com`, update the destination in `vercel.json` first.
 
 Free Render services sleep after ~15 minutes without traffic; the first request afterwards takes ~30–50 seconds while it wakes up.
