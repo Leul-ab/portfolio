@@ -20,7 +20,7 @@ const defaultContent: SiteContent = {
     "Full-stack developer focused on building reliable, scalable, and modern web applications that turn ideas into practical digital experiences.",
   aboutText:
     "I build practical digital experiences, from thoughtful interfaces to dependable backend systems.",
-  profileImage: "/leul_image.png",
+  profileImage: "/leul_image.webp",
   resumeUrl: "/LEUL_ABERA_CV.pdf",
   email: "leulabera321@gmail.com",
   location: "Addis Ababa, Ethiopia",

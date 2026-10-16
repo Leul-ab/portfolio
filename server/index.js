@@ -72,7 +72,7 @@ const defaultContent = {
     "Full-stack developer focused on building reliable, scalable, and modern web applications that turn ideas into practical digital experiences.",
   aboutText:
     "I build practical digital experiences, from thoughtful interfaces to dependable backend systems.",
-  profileImage: "/leul_image.png",
+  profileImage: "/leul_image.webp",
   resumeUrl: "/LEUL_ABERA_CV.pdf",
   email: "leulabera321@gmail.com",
   location: "Addis Ababa, Ethiopia",
@@ -293,11 +293,11 @@ const upload = multer({
   storage: useCloudinary
     ? multer.memoryStorage()
     : multer.diskStorage({
-        destination: uploadsDirectory,
-        filename: (_request, file, callback) => {
-          callback(null, `${crypto.randomUUID()}${imageTypes.get(file.mimetype) || ".bin"}`)
-        },
-      }),
+      destination: uploadsDirectory,
+      filename: (_request, file, callback) => {
+        callback(null, `${crypto.randomUUID()}${imageTypes.get(file.mimetype) || ".bin"}`)
+      },
+    }),
   limits: { fileSize: 5 * 1024 * 1024, files: 1 },
   fileFilter: (_request, file, callback) => {
     if (!imageTypes.has(file.mimetype)) return callback(clientError("Upload a JPG, PNG, WebP, or GIF image."))
@@ -448,10 +448,10 @@ app.put("/api/admin/projects/:id", requireAdmin, async (request, response) => {
   const params = projectParams(project, 0).slice(0, 8)
   const [row] = id
     ? await query(
-        `UPDATE projects SET title=$1, description=$2, tags=$3, category=$4, image=$5, links=$6, image_fit=$7, image_bg=$8
+      `UPDATE projects SET title=$1, description=$2, tags=$3, category=$4, image=$5, links=$6, image_fit=$7, image_bg=$8
          WHERE id=$9 RETURNING *`,
-        [...params, id],
-      )
+      [...params, id],
+    )
     : []
   if (!row) return response.status(404).json({ error: "Project not found." })
   response.json(encodeProject(row))
