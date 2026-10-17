@@ -1,12 +1,18 @@
 import "dotenv/config"
+import dns from "node:dns"
 import crypto from "node:crypto"
+
+dns.setDefaultResultOrder("ipv4first")
 import fs from "node:fs"
 import path from "node:path"
 import { fileURLToPath } from "node:url"
 import express from "express"
 import multer from "multer"
 import nodemailer from "nodemailer"
-import pg from "pg"
+import { Pool, neonConfig } from "@neondatabase/serverless"
+import ws from "ws"
+
+neonConfig.webSocketConstructor = ws
 
 const rootDirectory = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..")
 const uploadsDirectory = path.join(rootDirectory, "public", "uploads")
@@ -32,7 +38,7 @@ const useCloudinary = Boolean(cloudinaryUrl)
 const cloudinary = useCloudinary ? (await import("cloudinary")).v2 : null
 if (!useCloudinary) fs.mkdirSync(uploadsDirectory, { recursive: true })
 
-const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL, max: 5 })
+const pool = new Pool({ connectionString: process.env.DATABASE_URL, max: 5 })
 const query = async (text, params) => (await pool.query(text, params)).rows
 
 await pool.query(`
@@ -75,6 +81,7 @@ const defaultContent = {
     "I build practical digital experiences, from thoughtful interfaces to dependable backend systems.",
   profileImage: "/leul_image.webp",
   resumeUrl: "/LEUL_ABERA_CV.pdf",
+  showResume: true,
   email: "leulabera321@gmail.com",
   location: "Addis Ababa, Ethiopia",
   phone: "+251 979 254 066",
@@ -203,7 +210,10 @@ app.use(express.json({ limit: "32kb" }))
 if (!useCloudinary) app.use("/uploads", express.static(uploadsDirectory, { maxAge: "1d" }))
 
 const contentFields = Object.keys(defaultContent)
-const getContent = async () => JSON.parse((await query("SELECT value FROM content WHERE id = 1"))[0].value)
+const getContent = async () => {
+  const rows = await query("SELECT value FROM content WHERE id = 1")
+  return { ...defaultContent, ...(rows[0] ? JSON.parse(rows[0].value) : {}) }
+}
 const encodeProject = (row) => ({
   id: row.id,
   title: row.title,
@@ -318,8 +328,14 @@ function uploadToCloudinary(buffer) {
 }
 
 app.get("/api/health", (_request, response) => response.json({ ok: true }))
-app.get("/api/content", async (_request, response) => response.json(await getContent()))
-app.get("/api/projects", async (_request, response) => response.json(await getProjects()))
+app.get("/api/content", async (_request, response) => {
+  response.setHeader("Cache-Control", "no-cache, no-store, must-revalidate")
+  response.json(await getContent())
+})
+app.get("/api/projects", async (_request, response) => {
+  response.setHeader("Cache-Control", "no-cache, no-store, must-revalidate")
+  response.json(await getProjects())
+})
 
 const mailTransporter =
   process.env.GMAIL_USER && process.env.GMAIL_APP_PASSWORD
@@ -449,18 +465,34 @@ app.post("/api/admin/logout", async (request, response) => {
   response.json({ authenticated: false })
 })
 
-app.put("/api/admin/content", requireAdmin, async (request, response) => {
+async function updateContentHandler(request, response) {
   const current = await getContent()
   const nextContent = { ...current }
+  const body = request.body || {}
+
+  if ("showResume" in body) {
+    nextContent.showResume = Boolean(body.showResume)
+  }
+
   for (const field of contentFields) {
-    if (typeof request.body?.[field] !== "string") return response.status(400).json({ error: `The ${field} field must be text.` })
-    const value = request.body[field].trim()
-    if (value.length > 5000) return response.status(400).json({ error: `${field} is too long.` })
+    if (field === "showResume") continue
+    if (body[field] === undefined) continue
+    if (typeof body[field] !== "string") {
+      return response.status(400).json({ error: `The ${field} field must be text.` })
+    }
+    const value = body[field].trim()
+    if (value.length > 5000) {
+      return response.status(400).json({ error: `${field} is too long.` })
+    }
     nextContent[field] = value
   }
+
   await query("UPDATE content SET value = $1 WHERE id = 1", [JSON.stringify(nextContent)])
   response.json(nextContent)
-})
+}
+
+app.put("/api/admin/content", requireAdmin, updateContentHandler)
+app.patch("/api/admin/content", requireAdmin, updateContentHandler)
 
 app.post("/api/admin/upload", requireAdmin, upload.single("image"), async (request, response) => {
   if (!request.file) return response.status(400).json({ error: "Choose an image to upload." })
@@ -477,6 +509,66 @@ app.post("/api/admin/upload", requireAdmin, upload.single("image"), async (reque
           ? "Cloudinary cloud name not found. Check the cloud name at the end of CLOUDINARY_URL."
           : `Image upload to Cloudinary failed${error?.message ? `: ${error.message}` : "."}`
     response.status(502).json({ error: reason })
+  }
+})
+
+const cvTypes = new Set([
+  "application/pdf",
+  "application/msword",
+  "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  "application/octet-stream",
+])
+
+const cvUpload = multer({
+  storage: useCloudinary
+    ? multer.memoryStorage()
+    : multer.diskStorage({
+        destination: uploadsDirectory,
+        filename: (_request, file, callback) => {
+          const ext = path.extname(file.originalname).toLowerCase() || ".pdf"
+          callback(null, `cv-${crypto.randomUUID()}${ext}`)
+        },
+      }),
+  limits: { fileSize: 10 * 1024 * 1024, files: 1 },
+  fileFilter: (_request, file, callback) => {
+    const ext = path.extname(file.originalname).toLowerCase()
+    if (!cvTypes.has(file.mimetype) && !ext.match(/\.(pdf|docx?)$/)) {
+      return callback(clientError("Upload a PDF or Word document for your CV."))
+    }
+    callback(null, true)
+  },
+})
+
+function uploadRawToCloudinary(buffer, originalname) {
+  return new Promise((resolve, reject) => {
+    const parsed = path.parse(originalname)
+    const cleanName = (parsed.name || "cv").replace(/[^a-zA-Z0-9-_]/g, "_")
+    const ext = parsed.ext || ".pdf"
+    cloudinary.uploader
+      .upload_stream(
+        {
+          folder: "portfolio/docs",
+          resource_type: "raw",
+          public_id: `${cleanName}-${crypto.randomUUID().slice(0, 8)}${ext}`,
+        },
+        (error, result) => {
+          if (error || !result) return reject(error || new Error("CV upload failed."))
+          resolve(result.secure_url)
+        }
+      )
+      .end(buffer)
+  })
+}
+
+app.post("/api/admin/upload-cv", requireAdmin, cvUpload.single("cv"), async (request, response) => {
+  if (!request.file) return response.status(400).json({ error: "Choose a CV file (PDF or Word) to upload." })
+  if (!useCloudinary) return response.status(201).json({ url: `/uploads/${request.file.filename}` })
+  try {
+    const url = await uploadRawToCloudinary(request.file.buffer, request.file.originalname)
+    response.status(201).json({ url })
+  } catch (error) {
+    console.error("Cloudinary CV upload failed:", error)
+    response.status(502).json({ error: "CV upload failed. You can also paste a direct link." })
   }
 })
 

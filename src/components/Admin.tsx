@@ -1,6 +1,6 @@
 import { useEffect, useState, type FormEvent, type ReactNode } from "react"
-import { ArrowLeft, Check, Eye, EyeOff, LogOut, Mail, Plus, Save, Trash2 } from "lucide-react"
-import type { SiteContent } from "../context/SiteContentContext"
+import { ArrowLeft, Check, CheckCircle2, ExternalLink, Eye, EyeOff, FileText, Loader2, LogOut, Mail, Plus, Save, Trash2 } from "lucide-react"
+import { type SiteContent, notifyContentUpdated } from "../context/SiteContentContext"
 import { apiRequest } from "../lib/api"
 
 type Project = {
@@ -43,12 +43,11 @@ const emptyProject: ProjectDraft = {
   imageBg: "",
 }
 
-const contentFields: { key: keyof SiteContent; label: string; multiline?: boolean }[] = [
+const contentFields: { key: keyof Omit<SiteContent, "showResume" | "resumeUrl">; label: string; multiline?: boolean }[] = [
   { key: "heroName", label: "Name shown in the hero" },
   { key: "heroIntro", label: "Hero introduction", multiline: true },
   { key: "aboutText", label: "About text", multiline: true },
   { key: "profileImage", label: "Profile image path" },
-  { key: "resumeUrl", label: "Resume URL or path" },
   { key: "email", label: "Contact email" },
   { key: "location", label: "Location" },
   { key: "phone", label: "Phone number" },
@@ -76,6 +75,7 @@ export default function Admin() {
   const [draft, setDraft] = useState<ProjectDraft>(emptyProject)
   const [editingId, setEditingId] = useState<number | null>(null)
   const [busy, setBusy] = useState(false)
+  const [resumeSaveStatus, setResumeSaveStatus] = useState<"idle" | "saving" | "saved">("idle")
   const [notice, setNotice] = useState("")
   const [error, setError] = useState("")
 
@@ -131,10 +131,12 @@ export default function Admin() {
     setBusy(true)
     setError("")
     try {
-      setContent(await apiRequest<SiteContent>("/api/admin/content", {
+      const saved = await apiRequest<SiteContent>("/api/admin/content", {
         method: "PUT",
         body: JSON.stringify(content),
-      }))
+      })
+      setContent(saved)
+      notifyContentUpdated(saved)
       setNotice("Site details saved")
     } catch (requestError) {
       setError(requestError instanceof Error ? requestError.message : "Could not save site details.")
@@ -163,6 +165,90 @@ export default function Admin() {
       setNotice("Image uploaded. Save site details to publish it.")
     } catch (requestError) {
       setError(requestError instanceof Error ? requestError.message : "Image upload failed.")
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  async function uploadCV(file: File) {
+    const formData = new FormData()
+    formData.set("cv", file)
+    const result = await apiRequest<{ url: string }>("/api/admin/upload-cv", {
+      method: "POST",
+      body: formData,
+    })
+    return result.url
+  }
+
+  async function uploadForCV(file?: File) {
+    if (!file || !content) return
+    setBusy(true)
+    setError("")
+    setResumeSaveStatus("saving")
+    try {
+      const url = await uploadCV(file)
+      // Automatically save to the database so the new CV applies immediately!
+      const saved = await apiRequest<SiteContent>("/api/admin/content", {
+        method: "PATCH",
+        body: JSON.stringify({ resumeUrl: url }),
+      })
+      setContent(saved)
+      notifyContentUpdated(saved)
+      setResumeSaveStatus("saved")
+      setNotice(`New CV uploaded and applied to site: ${file.name}`)
+      setTimeout(() => setResumeSaveStatus("idle"), 4000)
+    } catch (requestError) {
+      setResumeSaveStatus("idle")
+      setError(requestError instanceof Error ? requestError.message : "CV upload failed.")
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  async function toggleShowResume(checked: boolean) {
+    if (!content) return
+    const previous = content.showResume
+    setContent({ ...content, showResume: checked })
+    setResumeSaveStatus("saving")
+    setError("")
+    try {
+      const saved = await apiRequest<SiteContent>("/api/admin/content", {
+        method: "PATCH",
+        body: JSON.stringify({ showResume: checked }),
+      })
+      setContent(saved)
+      notifyContentUpdated(saved)
+      setResumeSaveStatus("saved")
+      setNotice(checked ? "Resume button enabled on homepage" : "Resume button hidden on homepage")
+      setTimeout(() => setResumeSaveStatus("idle"), 3000)
+    } catch (requestError) {
+      setContent((current) => (current ? { ...current, showResume: previous } : null))
+      setResumeSaveStatus("idle")
+      setError(requestError instanceof Error ? requestError.message : "Failed to update resume button setting.")
+    }
+  }
+
+  async function saveResumeSettings() {
+    if (!content) return
+    setBusy(true)
+    setError("")
+    setResumeSaveStatus("saving")
+    try {
+      const saved = await apiRequest<SiteContent>("/api/admin/content", {
+        method: "PATCH",
+        body: JSON.stringify({
+          resumeUrl: content.resumeUrl,
+          showResume: content.showResume ?? true,
+        }),
+      })
+      setContent(saved)
+      notifyContentUpdated(saved)
+      setResumeSaveStatus("saved")
+      setNotice("Resume and CV settings saved")
+      setTimeout(() => setResumeSaveStatus("idle"), 3000)
+    } catch (requestError) {
+      setResumeSaveStatus("idle")
+      setError(requestError instanceof Error ? requestError.message : "Could not save resume settings.")
     } finally {
       setBusy(false)
     }
@@ -340,6 +426,99 @@ export default function Admin() {
                   )}
                 </Field>
               ))}
+
+              {/* Resume & CV Settings */}
+              <div className="rounded-xl border border-zinc-800 bg-zinc-950/70 p-5 space-y-4">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <FileText className="h-4 w-4 text-emerald-400" />
+                      <h3 className="text-sm font-semibold text-zinc-100">Hero Section Resume Button</h3>
+                      {resumeSaveStatus === "saving" && (
+                        <span className="inline-flex items-center gap-1 rounded-full border border-amber-500/20 bg-amber-500/10 px-2 py-0.5 text-[11px] font-medium text-amber-400">
+                          <Loader2 size={11} className="animate-spin" /> Saving...
+                        </span>
+                      )}
+                      {resumeSaveStatus === "saved" && (
+                        <span className="inline-flex items-center gap-1 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-2 py-0.5 text-[11px] font-medium text-emerald-400">
+                          <CheckCircle2 size={11} /> Saved & Live!
+                        </span>
+                      )}
+                    </div>
+                    <p className="mt-1 text-xs text-zinc-400">
+                      Toggle whether visitors see the "Resume" button on the front page. Changes apply automatically.
+                    </p>
+                  </div>
+
+                  {/* Toggle Switch */}
+                  <label className="relative inline-flex cursor-pointer items-center">
+                    <input
+                      type="checkbox"
+                      checked={content.showResume ?? true}
+                      disabled={busy}
+                      onChange={(event) => void toggleShowResume(event.target.checked)}
+                      className="peer sr-only"
+                    />
+                    <div className="peer h-6 w-11 rounded-full bg-zinc-800 border border-zinc-700 after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:bg-zinc-400 after:transition-all after:content-[''] peer-checked:bg-emerald-500 peer-checked:border-emerald-400 peer-checked:after:translate-x-full peer-checked:after:bg-zinc-950 peer-focus:outline-none" />
+                    <span className="ml-3 text-xs font-medium text-zinc-300">
+                      {(content.showResume ?? true) ? "Active (Shown)" : "Off (Hidden)"}
+                    </span>
+                  </label>
+                </div>
+
+                <div className="border-t border-zinc-800/80 pt-4 space-y-3">
+                  <Field label="Upload new CV document (PDF, Word; 10 MB max)">
+                    <input
+                      type="file"
+                      accept=".pdf,.doc,.docx,application/pdf"
+                      disabled={busy}
+                      onChange={(event) => void uploadForCV(event.target.files?.[0])}
+                      className="mt-2 block w-full text-sm text-zinc-400 file:mr-4 file:rounded-md file:border-0 file:bg-zinc-800 file:px-3 file:py-2 file:text-sm file:text-zinc-200 hover:file:bg-zinc-700"
+                    />
+                    <p className="mt-1 text-[11px] text-zinc-500">
+                      Uploading a document automatically saves and updates the resume link across the site.
+                    </p>
+                  </Field>
+
+                  <Field label="Or specify direct Resume URL / file path">
+                    <input
+                      value={content.resumeUrl}
+                      onChange={(event) => setContent({ ...content, resumeUrl: event.target.value })}
+                      placeholder="/LEUL_ABERA_CV.pdf or https://..."
+                      className={inputClass}
+                    />
+                  </Field>
+
+                  <div className="flex flex-col gap-2 pt-1 sm:flex-row sm:items-center sm:justify-between">
+                    {content.resumeUrl ? (
+                      <div className="flex items-center gap-2 text-xs text-zinc-400">
+                        <span>Current CV file:</span>
+                        <a
+                          href={content.resumeUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1 text-emerald-400 underline hover:text-emerald-300"
+                        >
+                          {content.resumeUrl} <ExternalLink size={12} />
+                        </a>
+                      </div>
+                    ) : (
+                      <span className="text-xs text-zinc-500">No CV file linked yet</span>
+                    )}
+
+                    <button
+                      type="button"
+                      onClick={() => void saveResumeSettings()}
+                      disabled={busy}
+                      className="inline-flex items-center gap-1.5 self-start rounded-md border border-zinc-700 bg-zinc-800 px-3 py-1.5 text-xs font-semibold text-zinc-200 transition hover:border-emerald-500/50 hover:bg-zinc-700 hover:text-white disabled:opacity-50"
+                    >
+                      <Save size={13} />
+                      Save CV path
+                    </button>
+                  </div>
+                </div>
+              </div>
+
               <Field label="Upload a new profile image (JPG, PNG, WebP, GIF; 5 MB max)">
                 <input type="file" accept="image/jpeg,image/png,image/webp,image/gif" disabled={busy} onChange={(event) => void uploadForContent(event.target.files?.[0])} className="mt-2 block w-full text-sm text-zinc-400 file:mr-4 file:rounded-md file:border-0 file:bg-zinc-800 file:px-3 file:py-2 file:text-sm file:text-zinc-200 hover:file:bg-zinc-700" />
               </Field>
