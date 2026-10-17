@@ -349,12 +349,7 @@ const mailTransporter =
     : null
 
 async function sendNotificationEmail({ name, email, subject, message }) {
-  if (!mailTransporter) {
-    console.log("Email notification skipped: GMAIL_USER or GMAIL_APP_PASSWORD not set in environment.")
-    return
-  }
-
-  const recipient = process.env.NOTIFICATION_EMAIL || process.env.GMAIL_USER
+  const recipient = process.env.NOTIFICATION_EMAIL || process.env.GMAIL_USER || "leulabera321@gmail.com"
   const cleanSubject = subject ? subject : "New Contact Submission"
   const safeMessage = message.replace(/</g, "&lt;").replace(/>/g, "&gt;")
 
@@ -394,6 +389,43 @@ async function sendNotificationEmail({ name, email, subject, message }) {
       </div>
     </div>
   `
+
+  // 1. Resend API (HTTPS port 443 — recommended on Render to bypass SMTP port blocking)
+  if (process.env.RESEND_API_KEY) {
+    try {
+      const response = await fetch("https://api.resend.com/emails", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          from: "Portfolio Contact <onboarding@resend.dev>",
+          to: [recipient],
+          reply_to: email,
+          subject: `[Portfolio] ${cleanSubject} - ${name}`,
+          html,
+          text: `New contact submission from ${name} (${email}):\n\nSubject: ${cleanSubject}\n\nMessage:\n${message}`,
+        }),
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}))
+        console.error("Resend API rejected email:", errorData)
+      } else {
+        console.log("Email notification sent successfully via Resend.")
+        return
+      }
+    } catch (error) {
+      console.error("Failed to send via Resend:", error.message)
+    }
+  }
+
+  // 2. Gmail Nodemailer fallback (for local development or environments with open SMTP ports)
+  if (!mailTransporter) {
+    console.log("Email notification skipped: neither RESEND_API_KEY nor GMAIL_USER/GMAIL_APP_PASSWORD is set.")
+    return
+  }
 
   await mailTransporter.sendMail({
     from: `"Portfolio Contact" <${process.env.GMAIL_USER}>`,
