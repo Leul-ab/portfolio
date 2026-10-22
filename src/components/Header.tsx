@@ -5,6 +5,7 @@ import {
   Home,
   User,
   Code2,
+  GraduationCap,
   Briefcase,
   Layers,
   Mail,
@@ -25,6 +26,11 @@ const navLinks = [
     title: "Skills",
     href: "#skills",
     icon: <Code2 className="h-full w-full" />,
+  },
+  {
+    title: "Education",
+    href: "#education",
+    icon: <GraduationCap className="h-full w-full" />,
   },
   {
     title: "Experience",

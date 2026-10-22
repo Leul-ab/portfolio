@@ -28,9 +28,9 @@ const navigation = [
   { label: "About", href: "#about" },
   { label: "Services", href: "#services" },
   { label: "Skills", href: "#skills" },
+  { label: "Education", href: "#education" },
   { label: "Experience", href: "#experience" },
   { label: "Projects", href: "#projects" },
-  { label: "Education", href: "#education" },
 ]
 
 export default function Footer() {

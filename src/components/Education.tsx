@@ -38,7 +38,7 @@ export default function Education() {
               <span className="h-px w-8 bg-indigo-500" />
 
               <span className="text-xs font-semibold uppercase tracking-[0.25em] text-indigo-400">
-                Academic Background
+                Where It All Began
               </span>
             </div>
 

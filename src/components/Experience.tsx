@@ -90,7 +90,7 @@ export default function Experience() {
         <Reveal>
           <div className="mb-14 max-w-2xl">
             <p className="mb-3 text-sm font-semibold uppercase tracking-[0.25em] text-indigo-400">
-              Career journey
+              Then Came the Work
             </p>
 
             <h2 className="text-4xl font-bold tracking-tight text-white md:text-5xl">

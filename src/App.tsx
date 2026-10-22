@@ -32,11 +32,11 @@ function App() {
           <SectionDivider />
           <Skills />
           <SectionDivider />
+          <Education />
+          <SectionDivider />
           <Experience />
           <SectionDivider />
           <Projects />
-          <SectionDivider />
-          <Education />
           <SectionDivider />
           <Contact />
         </main>
